@@ -36,6 +36,14 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# guias de agentes (no se commitean; agents/ guarda las copias)
+/agents/
+/AGENTS.md
+/CLAUDE.md
+
+# logs de fases (docs/plan.md si se trackea)
+/docs/log-fase-*.md
+
 # vercel
 .vercel
 
