@@ -3,44 +3,59 @@ import { PrismaClient } from "@prisma/client";
 import type { Source } from "@prisma/client";
 import { hashPassword } from "../src/lib/auth/password";
 
-// Datos iniciales (Fase 0 + Fase 1):
-// - Registry de fuentes
+// Datos iniciales:
+// - Registry de fuentes (reales: portal UNJBG + redes de la universidad)
 // - Usuarios del panel admin
 // - Categorias por defecto
 // - raw_items de ejemplo para probar la cola de moderacion
 
 const prisma = new PrismaClient();
 
+// Fuentes iniciales. Por fases: WEB/RSS se ingieren en Fase 2; FACEBOOK
+// (Fase 3) y WHATSAPP (Fase 4) quedan registrados para los proximos pasos.
 const sourceSeeds = [
   {
-    name: "DigitalTacna",
+    name: "UNJBG Noticias",
     type: "WEB" as const,
-    url: "https://ejemplo.com/digitaltacna",
-    config: { sitemapPath: "/sitemap.xml" },
+    url: "https://unjbg.edu.pe/0022ba85-8ffb-4e47-2850-08d7986baac7",
+    config: {
+      adapter: "unjbg",
+      sectionId: "0022ba85-8ffb-4e47-2850-08d7986baac7",
+    },
     autopublish: true,
-    pollIntervalMinutes: 30,
+    pollIntervalMinutes: 15,
   },
   {
-    name: "Radio Tacna 99.7",
+    name: "UNJBG Comunicados",
+    type: "WEB" as const,
+    url: "https://unjbg.edu.pe/ecbc3691-7440-4c6f-b242-08dc0151b45c",
+    config: {
+      adapter: "unjbg",
+      sectionId: "ecbc3691-7440-4c6f-b242-08dc0151b45c",
+    },
+    autopublish: true,
+    pollIntervalMinutes: 15,
+  },
+  {
+    name: "UNJBG OCIM (Imagen)",
     type: "FACEBOOK" as const,
-    url: "https://facebook.com/radiotacna",
-    config: { pageId: "radiotacna" },
-    autopublish: false,
-  },
-  {
-    name: "Noticias del Valle (canal)",
-    type: "WHATSAPP" as const,
-    url: null,
-    config: { channelId: "canal-xyz" },
+    url: "https://www.facebook.com/UNJBG.ocim/",
+    config: { pageId: "UNJBG.ocim" },
     autopublish: true,
   },
   {
-    name: "RSS Gobierno Regional",
-    type: "RSS" as const,
-    url: "https://ejemplo.com/rss/gobierno-regional",
-    config: {},
+    name: "UNJBG CU (Centro Universitario)",
+    type: "FACEBOOK" as const,
+    url: "https://www.facebook.com/UNJBGCU/",
+    config: { pageId: "UNJBGCU" },
+    autopublish: true,
+  },
+  {
+    name: "UNJBG Grupo Comunidad",
+    type: "FACEBOOK" as const,
+    url: "https://facebook.com/groups/2043096719504792/",
+    config: { groupId: "2043096719504792", privateGroup: true },
     autopublish: false,
-    pollIntervalMinutes: 60,
   },
 ];
 
@@ -75,19 +90,19 @@ const userSeeds: {
 // raw_items de ejemplo para probar la cola de moderacion (Fase 1).
 const sampleRawItems = [
   {
-    sourceName: "DigitalTacna",
+    sourceName: "UNJBG Noticias",
     externalId: "demo-001",
     title: "Inauguran obra de saneamiento en distrito de Tacna",
     body: "Las autoridades inauguraron una nueva etapa de la obra de saneamiento que beneficiara a mas de 3000 vecinos de la zona este de la ciudad.",
   },
   {
-    sourceName: "Noticias del Valle (canal)",
+    sourceName: "UNJBG Comunicados",
     externalId: "demo-002",
     title: "Suspenden clases por lluvias intensas en la region",
     body: "Las UGEL de la region suspendieron las clases por las lluvias intensas registradas en las ultimas horas. Comunidad atenta a los comunicados oficiales.",
   },
   {
-    sourceName: "Radio Tacna 99.7",
+    sourceName: "UNJBG OCIM (Imagen)",
     externalId: "demo-003",
     title: "Universidad anuncia jornada de admision para proximo semestre",
     body: "La casa superior de estudios publico el cronograma del siguiente proceso de admision. Las inscripciones inician la proxima semana.",
@@ -102,11 +117,32 @@ async function main() {
       where: {
         name_type: { name: source.name, type: source.type },
       },
-      update: {},
+      update: {
+        url: source.url,
+        config: source.config,
+        autopublish: source.autopublish,
+        status: "ACTIVE",
+        pollIntervalMinutes: source.pollIntervalMinutes ?? null,
+      },
       create: source,
     });
     createdSources.set(saved.name, saved);
     console.log(`Fuente listada: ${saved.name} (${saved.type})`);
+  }
+
+  // Quitar fuentes de ejemplo de fases anteriores que quedaron con URLs
+  // falsas (ejemplo.com), para que el scheduler no intente poll aca.
+  const oldPlaceholders = [
+    "DigitalTacna",
+    "RSS Gobierno Regional",
+    "Noticias del Valle (canal)",
+    "Radio Tacna 99.7",
+  ];
+  const deleted = await prisma.source.deleteMany({
+    where: { name: { in: oldPlaceholders } },
+  });
+  if (deleted.count > 0) {
+    console.log(`Fuentes placeholder eliminadas: ${deleted.count}`);
   }
 
   for (const category of categorySeeds) {
@@ -143,7 +179,10 @@ async function main() {
 
     await prisma.rawItem.upsert({
       where: {
-        sourceId_externalId: { sourceId: source.id, externalId: item.externalId },
+        sourceId_externalId: {
+          sourceId: source.id,
+          externalId: item.externalId,
+        },
       },
       update: {},
       create: {

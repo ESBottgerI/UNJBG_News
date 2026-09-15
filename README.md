@@ -8,7 +8,7 @@ El plan completo está en [`docs/plan.md`](docs/plan.md).
 
 ## Estado del proyecto
 
-**Fase 1 (modelo de datos + panel admin) — en curso:**
+**Fase 2 (adaptadores web) — en curso:**
 
 - App Next.js 16 + TypeScript
 - Docker Compose (Postgres 16 + app + nginx)
@@ -17,8 +17,11 @@ El plan completo está en [`docs/plan.md`](docs/plan.md).
   (dedup por `sourceId+externalId` y hash de contenido)
 - Panel de moderacion en `/admin`: login con sesion firmada (`AUTH_SECRET`),
   cola de revision (aprobar/editar/descartar), noticias, categorias y fuentes
-- API de ingesta `POST /api/ingest` (contrato para los adaptadores de Fase 2)
+- API de ingesta `POST /api/ingest` (contrato para los adaptadores)
 - Health-check de la BD en `/api/health`
+- **Adaptadores (Fase 2)**: UNJBG (API JSON del portal), sitemap generico
+  (Cheerio) y RSS. Scheduler con `node-cron` (cada 1 min revisa fuentes debidas)
+  y boton "Probar ahora" en `/admin/sources`.
 
 ## Requisitos
 
@@ -65,6 +68,20 @@ npm run dev
 | `npm run db:migrate`    | Crea/lleva al dia las migraciones          |
 | `npm run db:seed`       | Carga ejemplos (fuentes, admin, categorias, items) |
 | `npm run db:studio`     | UI de exploracion de la BD                 |
+| `npm run adapters:run -- <fuente>` | Corre el adaptador de una fuente al instante |
+
+## Adaptadores (Fase 2)
+
+Cada fuente se ingiere con un adaptador según su tipo y `source.config`:
+
+- **WEB** con `config.adapter: "unjbg"` → lee la API JSON del portal UNJBG
+  (listado + detalle) sin navegador.
+- **WEB** genérico → leer `sitemap.xml` y extrae OpenGraph/JSON-LD con Cheerio.
+- **RSS** → descarga el feed y lo parsea con `rss-parser`.
+
+El scheduler (`src/instrumentation.ts`) corre cada minuto y procesa las fuentes
+que hayan cumplido su `pollIntervalMinutes`. Puede desactivarse con
+`ENABLE_ADAPTER_SCHEDULER=false`.
 
 ## Probar la ingesta (Fase 2+ llega por adaptadores; hoy se usa para QA)
 

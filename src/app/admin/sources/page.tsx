@@ -1,7 +1,12 @@
 import type { SourceType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth/session";
-import { createSource, deleteSource, updateSource } from "@/app/actions/admin";
+import {
+  createSource,
+  deleteSource,
+  pollSource,
+  updateSource,
+} from "@/app/actions/admin";
 
 const SOURCE_TYPES: SourceType[] = ["WEB", "FACEBOOK", "WHATSAPP", "RSS"];
 
@@ -157,30 +162,50 @@ export default async function AdminSourcesPage() {
                   />
                 </label>
 
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    className="rounded bg-zinc-800 px-3 py-1.5 text-sm text-white hover:bg-zinc-600"
-                  >
-                    Guardar
-                  </button>
-                  <form action={deleteSource}>
-                    <input type="hidden" name="sourceId" value={source.id} />
+<div className="flex gap-3">
                     <button
                       type="submit"
-                      className="rounded bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-500"
+                      className="rounded bg-zinc-800 px-3 py-1.5 text-sm text-white hover:bg-zinc-600"
                     >
-                      Eliminar
+                      Guardar
                     </button>
-                  </form>
-                </div>
-              </form>
+                    <form action={deleteSource}>
+                      <input type="hidden" name="sourceId" value={source.id} />
+                      <button
+                        type="submit"
+                        className="rounded bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-500"
+                      >
+                        Eliminar
+                      </button>
+                    </form>
+                    <form action={pollSource}>
+                      <input type="hidden" name="sourceId" value={source.id} />
+                      <button
+                        type="submit"
+                        className="rounded bg-blue-700 px-3 py-1.5 text-sm text-white hover:bg-blue-600"
+                      >
+                        Probar ahora
+                      </button>
+                    </form>
+                  </div>
+                </form>
 
-              <div className="mt-3 text-xs text-zinc-400">
-                {source._count.rawItems} items crudos · {source._count.posts}{" "}
-                noticias
+                <div className="mt-3 text-xs text-zinc-400">
+                  {source._count.rawItems} items crudos · {source._count.posts}{" "}
+                  noticias
+                  {source.lastRunAt && (
+                    <span className="block">
+                      Ultima corrida:{" "}
+                      {new Date(source.lastRunAt).toLocaleString("es-PE")}
+                    </span>
+                  )}
+                  {source.lastError && (
+                    <span className="mt-1 block rounded bg-red-50 px-2 py-1 text-red-700">
+                      Error: {source.lastError}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
           ))}
         </section>
       )}
