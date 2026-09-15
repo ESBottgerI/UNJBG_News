@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SourceType {
+  WEB
+  FACEBOOK
+  WHATSAPP
+  RSS
+}
+
+enum SourceStatus {
+  ACTIVE
+  PAUSED
+  DISABLED
+}
+
+// Registry de fuentes (Fase 0).
+// Las tablas raw_items, posts, categories y users se agregan en la Fase 1.
+model Source {
+  id                  String       @id @default(cuid())
+  name                String
+  type                SourceType
+  url                 String?
+  config              Json?        // Credenciales/detalles especificos por tipo de fuente
+  autopublish         Boolean      @default(false)
+  status              SourceStatus @default(ACTIVE)
+  pollIntervalMinutes Int?         // Solo para fuentes WEB/RSS
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@unique([name, type])
+}

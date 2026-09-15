@@ -1,0 +1,54 @@
+services:
+  # Base de datos compartida. En local: `docker compose up -d db`
+  # y la app corre con `npm run dev`. En produccion: `docker compose --profile full up -d`.
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: unjbg
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-unjbg_dev_password}
+      POSTGRES_DB: unjbg_news
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unjbg -d unjbg_news"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # App Next.js en contenedor (solo en produccion, perfil "full")
+  app:
+    build: .
+    restart: unless-stopped
+    profiles: ["full"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://unjbg:${POSTGRES_PASSWORD:-unjbg_dev_password}@db:5432/unjbg_news
+    volumes:
+      - media:/app/public/media
+    expose:
+      - "3000"
+
+  # Nginx: proxy inverso + media estatica (solo en produccion, perfil "full")
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    profiles: ["full"]
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - media:/usr/share/nginx/html/media:ro
+      - ./deploy/certs:/etc/nginx/certs:ro
+
+volumes:
+  pgdata:
+  media:
