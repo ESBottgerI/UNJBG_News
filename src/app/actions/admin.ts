@@ -231,3 +231,14 @@ export async function deleteSource(formData: FormData): Promise<void> {
   revalidatePath("/admin/sources");
   redirect("/admin/sources");
 }
+
+// Corre el adaptador de una fuente al instante (Fase 2). Los tipos sin
+// adaptador (FACEBOOK/WHATSAPP por ahora) devuelven un resultado con error.
+export async function pollSource(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = String(formData.get("sourceId") ?? "");
+  const { runAdapterForSource } = await import("@/adapters/runner");
+  await runAdapterForSource(id);
+
+  revalidatePath("/admin/sources");
+}

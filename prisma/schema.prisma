@@ -47,6 +47,8 @@ model Source {
   autopublish         Boolean      @default(false)
   status              SourceStatus @default(ACTIVE)
   pollIntervalMinutes Int?         // Solo para fuentes WEB/RSS
+  lastRunAt           DateTime?    // Ultima corrida del adaptador (Fase 2)
+  lastError           String?      // Ultimo error de la corrida (Fase 2)
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
