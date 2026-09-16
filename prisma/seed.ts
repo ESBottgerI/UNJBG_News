@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
-import { PrismaClient } from "@prisma/client";
-import type { Source } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
+import type { Source, SourceStatus, SourceType } from "@prisma/client";
 import { hashPassword } from "../src/lib/auth/password";
 
 // Datos iniciales:
@@ -13,10 +13,20 @@ const prisma = new PrismaClient();
 
 // Fuentes iniciales. Por fases: WEB/RSS se ingieren en Fase 2; FACEBOOK
 // (Fase 3) y WHATSAPP (Fase 4) quedan registrados para los proximos pasos.
-const sourceSeeds = [
+type SourceSeed = {
+  name: string;
+  type: SourceType;
+  url: string;
+  config: Prisma.InputJsonValue;
+  autopublish: boolean;
+  pollIntervalMinutes?: number;
+  status?: SourceStatus;
+};
+
+const sourceSeeds: SourceSeed[] = [
   {
     name: "UNJBG Noticias",
-    type: "WEB" as const,
+    type: "WEB",
     url: "https://unjbg.edu.pe/0022ba85-8ffb-4e47-2850-08d7986baac7",
     config: {
       adapter: "unjbg",
@@ -27,7 +37,7 @@ const sourceSeeds = [
   },
   {
     name: "UNJBG Comunicados",
-    type: "WEB" as const,
+    type: "WEB",
     url: "https://unjbg.edu.pe/ecbc3691-7440-4c6f-b242-08dc0151b45c",
     config: {
       adapter: "unjbg",
@@ -38,24 +48,29 @@ const sourceSeeds = [
   },
   {
     name: "UNJBG OCIM (Imagen)",
-    type: "FACEBOOK" as const,
+    type: "FACEBOOK",
     url: "https://www.facebook.com/UNJBG.ocim/",
     config: { pageId: "UNJBG.ocim" },
     autopublish: true,
+    pollIntervalMinutes: 60,
   },
   {
     name: "UNJBG CU (Centro Universitario)",
-    type: "FACEBOOK" as const,
+    type: "FACEBOOK",
     url: "https://www.facebook.com/UNJBGCU/",
     config: { pageId: "UNJBGCU" },
     autopublish: true,
+    pollIntervalMinutes: 60,
   },
   {
     name: "UNJBG Grupo Comunidad",
-    type: "FACEBOOK" as const,
+    type: "FACEBOOK",
     url: "https://facebook.com/groups/2043096719504792/",
     config: { groupId: "2043096719504792", privateGroup: true },
     autopublish: false,
+    // Grupo privado: requiere sesion (Fase 4). Pausado para que el scheduler
+    // de Fase 3 no intente poll contra el.
+    status: "PAUSED",
   },
 ];
 
@@ -121,7 +136,7 @@ async function main() {
         url: source.url,
         config: source.config,
         autopublish: source.autopublish,
-        status: "ACTIVE",
+        status: source.status ?? "ACTIVE",
         pollIntervalMinutes: source.pollIntervalMinutes ?? null,
       },
       create: source,

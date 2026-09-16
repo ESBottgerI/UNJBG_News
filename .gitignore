@@ -43,6 +43,7 @@ yarn-error.log*
 
 # logs de fases (docs/plan.md si se trackea)
 /docs/log-fase-*.md
+/docs/arranque-fase-*.md
 
 # vercel
 .vercel

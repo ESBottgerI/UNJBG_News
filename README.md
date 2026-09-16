@@ -8,7 +8,7 @@ El plan completo está en [`docs/plan.md`](docs/plan.md).
 
 ## Estado del proyecto
 
-**Fase 2 (adaptadores web) — en curso:**
+**Fase 3 (adaptador Facebook) — en curso:**
 
 - App Next.js 16 + TypeScript
 - Docker Compose (Postgres 16 + app + nginx)
@@ -22,6 +22,9 @@ El plan completo está en [`docs/plan.md`](docs/plan.md).
 - **Adaptadores (Fase 2)**: UNJBG (API JSON del portal), sitemap generico
   (Cheerio) y RSS. Scheduler con `node-cron` (cada 1 min revisa fuentes debidas)
   y boton "Probar ahora" en `/admin/sources`.
+- **Adaptador FACEBOOK (Fase 3)**: Playwright sobre paginas publicas sin sesion
+  (UNJBG OCIM y UNJBG CU). Dedup por id del post/permalink. Grupos privados
+  quedan pausados (requieren sesion, Fase 4).
 
 ## Requisitos
 
@@ -40,6 +43,9 @@ docker compose up -d db
 
 # 3. Instalar dependencias
 npm install
+
+#    bajar el navegador que usa Playwright (necesario para el adaptador de Facebook)
+npx playwright install chromium
 
 # 4. Crear las tablas + cargar fuentes de ejemplo
 npm run db:setup
@@ -70,7 +76,7 @@ npm run dev
 | `npm run db:studio`     | UI de exploracion de la BD                 |
 | `npm run adapters:run -- <fuente>` | Corre el adaptador de una fuente al instante |
 
-## Adaptadores (Fase 2)
+## Adaptadores
 
 Cada fuente se ingiere con un adaptador según su tipo y `source.config`:
 
@@ -78,6 +84,11 @@ Cada fuente se ingiere con un adaptador según su tipo y `source.config`:
   (listado + detalle) sin navegador.
 - **WEB** genérico → leer `sitemap.xml` y extrae OpenGraph/JSON-LD con Cheerio.
 - **RSS** → descarga el feed y lo parsea con `rss-parser`.
+- **FACEBOOK** → Playwright abre la página pública sin sesión, recoge las
+  publicaciones del muro y las manda al pipeline con dedup (id del post/permalink).
+  Los grupos privados devuelven un error claro (requieren sesión, Fase 4).
+
+Probar una fuente al instante: `npm run adapters:run -- "UNJBG OCIM (Imagen)"`.
 
 El scheduler (`src/instrumentation.ts`) corre cada minuto y procesa las fuentes
 que hayan cumplido su `pollIntervalMinutes`. Puede desactivarse con
