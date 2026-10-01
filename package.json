@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
     "cheerio": "^1.2.0",
     "chromium-bidi": "^0.6.3",
     "next": "16.3.5",
