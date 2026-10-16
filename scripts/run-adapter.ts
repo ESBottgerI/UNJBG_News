@@ -1,3 +1,4 @@
+import "../src/lib/env";
 import { prisma } from "../src/lib/prisma";
 import { runAdapterForSource } from "../src/adapters/runner";
 import { closeBrowser } from "../src/adapters/utils/browser";

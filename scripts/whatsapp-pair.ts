@@ -1,3 +1,4 @@
+import "../src/lib/env";
 import qrcode from "qrcode-terminal";
 import { createSocket, getAuthDir, loadBaileys } from "../src/whatsapp/session";
 

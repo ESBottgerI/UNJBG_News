@@ -1,3 +1,4 @@
+import "../src/lib/env";
 import { createSocket, getAuthDir } from "../src/whatsapp/session";
 import type { Chat } from "@whiskeysockets/baileys";
 

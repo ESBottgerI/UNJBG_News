@@ -1,5 +1,4 @@
 import type {
-  GroupMetadata,
   proto,
   WASocket,
   WAMessageKey,
@@ -26,7 +25,12 @@ type ILogger = {
 // El socket es una conexion WebSocket persistente: por eso vive en un proceso
 // aparte (scripts/whatsapp-*.ts) y no dentro del servidor de Next.js.
 
-export const WA_BROWSER_NAME = "UNJBG News Bot";
+// Nombre que se reporta a WhatsApp y aparece en "Dispositivos vinculados".
+// Debe ser un nombre de navegador real: al vincular con el codigo de 8 digitos,
+// WhatsApp rechaza la vinculacion si el nombre no es creible.
+export function getBrowserName(): string {
+  return process.env.WA_BROWSER_NAME ?? "Google Chrome";
+}
 
 // Prioridades de log: un nivel se escribe si su numero es <= al configurado.
 const LOG_LEVELS: Record<string, number> = {
@@ -115,27 +119,6 @@ async function getCachedMessage(
   return messageCache.get(cacheKey(key));
 }
 
-// Cache de metadata de grupos para no pegarle a WhatsApp en cada mensaje.
-const groupMetadataCache = new Map<string, GroupMetadata>();
-
-export async function getCachedGroupMetadata(
-  jid: string
-): Promise<GroupMetadata | undefined> {
-  return groupMetadataCache.get(jid);
-}
-
-export function cacheGroupMetadata(
-  jid: string,
-  metadata: GroupMetadata | undefined
-): void {
-  if (!metadata) return;
-  groupMetadataCache.set(jid, metadata);
-  if (groupMetadataCache.size > MESSAGE_CACHE_LIMIT) {
-    const oldest = groupMetadataCache.keys().next();
-    if (!oldest.done) groupMetadataCache.delete(oldest.value);
-  }
-}
-
 export type WhatsAppSession = {
   sock: WASocket;
   saveCreds: () => Promise<void>;
@@ -157,7 +140,7 @@ export async function createSocket(): Promise<WhatsAppSession> {
     },
     // macOS como cliente de escritorio: es lo que hace que WhatsApp entregue
     // el historial completo en el sync inicial (los perfiles Chrome lo recortan).
-    browser: B.Browsers.macOS(WA_BROWSER_NAME),
+    browser: B.Browsers.macOS(getBrowserName()),
     syncFullHistory: true,
     // false = no marcar el numero como "en linea" desde la sesion del bot, para
     // que el celular personal siga funcionando con normalidad y sin el consumo
@@ -165,7 +148,9 @@ export async function createSocket(): Promise<WhatsAppSession> {
     markOnlineOnConnect: false,
     logger,
     getMessage: getCachedMessage,
-    cachedGroupMetadata: getCachedGroupMetadata,
+    // El bot nunca envia mensajes, asi que no necesita metadata de grupos
+    // pre-cacheada. Se deja la funcion porque SocketConfig la exige.
+    cachedGroupMetadata: async () => undefined,
   });
 
   return { sock, saveCreds };

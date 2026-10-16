@@ -16,7 +16,8 @@
     "db:setup": "prisma migrate dev && prisma db seed",
     "adapters:run": "tsx scripts/run-adapter.ts",
     "whatsapp:pair": "tsx scripts/whatsapp-pair.ts",
-    "whatsapp:chats": "tsx scripts/whatsapp-chats.ts"
+    "whatsapp:chats": "tsx scripts/whatsapp-chats.ts",
+    "whatsapp:start": "tsx scripts/whatsapp-worker.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
