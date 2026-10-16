@@ -23,6 +23,8 @@ export function buildAdapter(source: Source): NewsAdapter {
     case "FACEBOOK":
       return new FacebookAdapter(source);
     default:
+      // WHATSAPP esta declarado en el enum pero no es un adaptador: lo consume
+      // el worker (src/whatsapp/worker.ts, Fase 4), que es push y no pull.
       throw new Error(
         `tipo de fuente sin adaptador implementado: ${source.type}`
       );

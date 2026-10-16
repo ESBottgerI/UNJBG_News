@@ -16,7 +16,7 @@ const prisma = new PrismaClient();
 type SourceSeed = {
   name: string;
   type: SourceType;
-  url: string;
+  url?: string | null;
   config: Prisma.InputJsonValue;
   autopublish: boolean;
   pollIntervalMinutes?: number;
@@ -70,6 +70,26 @@ const sourceSeeds: SourceSeed[] = [
     autopublish: false,
     // Grupo privado: requiere sesion (Fase 4). Pausado para que el scheduler
     // de Fase 3 no intente poll contra el.
+    status: "PAUSED",
+  },
+  {
+    name: "Grupo WhatsApp (ejemplo)",
+    type: "WHATSAPP",
+    // Sin url ni pollIntervalMinutes: WhatsApp es push, el worker escucha el
+    // chatId configurado en lugar de consultar por un intervalo.
+    config: { chatId: "" },
+    autopublish: false,
+    // Pausada hasta emparejar el bot (npm run whatsapp:pair) y pegar el jid
+    // que imprime `npm run whatsapp:chats` en config.chatId.
+    status: "PAUSED",
+  },
+  {
+    name: "Canal WhatsApp (ejemplo)",
+    type: "WHATSAPP",
+    config: { chatId: "" },
+    autopublish: false,
+    // Los canales no entregan historial: solo se ven mensajes nuevos a partir
+    // del momento en que el bot los recibe.
     status: "PAUSED",
   },
 ];
