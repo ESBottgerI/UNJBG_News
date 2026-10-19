@@ -37,18 +37,17 @@ enum PostStatus {
   REJECTED
 }
 
-// Registry de fuentes (Fase 0).
 model Source {
   id                  String       @id @default(cuid())
   name                String
   type                SourceType
   url                 String?
-  config              Json?        // Credenciales/detalles especificos por tipo de fuente
+  config              Json?
   autopublish         Boolean      @default(false)
   status              SourceStatus @default(ACTIVE)
-  pollIntervalMinutes Int?         // Solo para fuentes WEB/RSS
-  lastRunAt           DateTime?    // Ultima corrida del adaptador (Fase 2)
-  lastError           String?      // Ultimo error de la corrida (Fase 2)
+  pollIntervalMinutes Int?
+  lastRunAt           DateTime?
+  lastError           String?
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -58,7 +57,6 @@ model Source {
   @@unique([name, type])
 }
 
-// Staff del panel de moderacion (Fase 1).
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -71,7 +69,6 @@ model User {
   moderatedPosts Post[]
 }
 
-// Secciones del sitio publico (Local, UNJBG, Regional, ...).
 model Category {
   id        String   @id @default(cuid())
   slug      String   @unique
@@ -81,18 +78,16 @@ model Category {
   posts Post[]
 }
 
-// Payload crudo que llega de las fuentes (adaptadores) antes de ser noticia.
-// externalId + sourceId son unicos => dedup entre fuentes.
 model RawItem {
   id          String       @id @default(cuid())
   sourceId    String
   source      Source       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  externalId  String       // id del origen (post id, message id, url del articulo)
+  externalId  String
   status      IngestStatus @default(NEW)
-  payload     Json         // contenido original tal como lo mando el adaptador
-  contentHash String       // hash de titulo+cuerpo para dedup por contenido
+  payload     Json
+  contentHash String
   title       String?
-  images      Json?        // lista de URLs crudas ([string])
+  images      Json?
   seenAt      DateTime     @default(now())
   processedAt DateTime?
 
@@ -102,7 +97,6 @@ model RawItem {
   @@index([status, seenAt])
 }
 
-// Noticia final (luego de moderacion/pipeline). Salida al sitio publico.
 model Post {
   id          String     @id @default(cuid())
   rawItem     RawItem?   @relation(fields: [rawItemId], references: [id], onDelete: SetNull)
@@ -114,14 +108,18 @@ model Post {
   title       String
   bodyHtml    String
   imageUrl    String?
+  thumbnailUrl String?
+  imageMeta   Json?
   status      PostStatus @default(DRAFT)
   author      User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  authorId    String?    // quien moderó/edito la nota
+  authorId    String?
   publishedAt DateTime?
   moderatedAt DateTime?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  searchVector String?
 
   @@index([status, publishedAt])
   @@index([categoryId])
+  @@index([title])
 }
