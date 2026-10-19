@@ -1,5 +1,6 @@
 import type { Source } from "@prisma/client";
 import { ingestItem } from "../lib/ingest";
+import { processRawItem } from "../lib/pipeline/process";
 import { prisma } from "../lib/prisma";
 import {
   cacheMessage,
@@ -101,6 +102,7 @@ async function ingestOne(message: WAMessage): Promise<void> {
   });
 
   if (result.ok && !result.duplicate) {
+    try { await processRawItem(result.rawItemId); } catch (e) { console.error('pipeline error', e); }
     console.log(`[wa] mensaje nuevo de ${source.name}`);
   }
 }

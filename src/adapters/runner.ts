@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma";
 import { ingestItem } from "../lib/ingest";
+import { processRawItem } from "../lib/pipeline/process";
 import { buildAdapter, INGESTIBLE_TYPES, isDue } from "./index";
 import type { AdapterRunResult } from "./types";
 
@@ -53,8 +54,12 @@ export async function runAdapterForSource(
         publishedAt: item.publishedAt,
       });
       if (result.ok) {
-        if (result.duplicate) duplicates++;
-        else newItems++;
+        if (result.duplicate) {
+          duplicates++;
+        } else {
+          newItems++;
+          try { await processRawItem(result.rawItemId); } catch (e) { console.error('pipeline error', e); }
+        }
       } else {
         errors.push(result.error.message);
       }

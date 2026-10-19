@@ -17,7 +17,8 @@
     "adapters:run": "tsx scripts/run-adapter.ts",
     "whatsapp:pair": "tsx scripts/whatsapp-pair.ts",
     "whatsapp:chats": "tsx scripts/whatsapp-chats.ts",
-    "whatsapp:start": "tsx scripts/whatsapp-worker.ts"
+    "whatsapp:start": "tsx scripts/whatsapp-worker.ts",
+    "pipeline:process": "tsx scripts/process-queue.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -32,7 +33,9 @@
     "playwright": "^1.63.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "rss-parser": "^3.13.0"
+    "rss-parser": "^3.13.0",
+    "sanitize-html": "^2.18.1",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -41,6 +44,7 @@
     "@types/qrcode-terminal": "^0.12.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sanitize-html": "^2.16.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "prisma": "^6.19.3",
