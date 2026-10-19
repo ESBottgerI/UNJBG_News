@@ -3,10 +3,11 @@ import type { NewsAdapter } from "./types";
 import { UnjbgAdapter } from "./unjbg";
 import { SitemapWebAdapter } from "./web";
 import { RssAdapter } from "./rss";
+import { FacebookAdapter } from "./facebook";
 
 // Fabrica de adaptadores: decide que adaptador usar segun el tipo de fuente
 // y su config. Aqui se agregan adaptadores nuevos en fases futuras
-// (FACEBOOK: Fase 3, WHATSAPP: Fase 4).
+// (WHATSAPP: Fase 4).
 
 export function buildAdapter(source: Source): NewsAdapter {
   const config = (source.config ?? {}) as Record<string, unknown>;
@@ -19,15 +20,20 @@ export function buildAdapter(source: Source): NewsAdapter {
         return new UnjbgAdapter(source);
       }
       return new SitemapWebAdapter(source);
+    case "FACEBOOK":
+      return new FacebookAdapter(source);
     default:
+      // WHATSAPP esta declarado en el enum pero no es un adaptador: lo consume
+      // el worker (src/whatsapp/worker.ts, Fase 4), que es push y no pull.
       throw new Error(
         `tipo de fuente sin adaptador implementado: ${source.type}`
       );
   }
 }
 
-// Tipos que el runner puede procesar hoy (sin sesion ni navegador).
-export const INGESTIBLE_TYPES: SourceType[] = ["WEB", "RSS"];
+// Tipos que el runner puede procesar hoy. WEB/RSS sin navegador (Fase 2);
+// FACEBOOK usa Playwright sobre contenido publico (Fase 3).
+export const INGESTIBLE_TYPES: SourceType[] = ["WEB", "RSS", "FACEBOOK"];
 
 // Solo fuentes activas y con intervalo de polling configurado.
 export function isDue(

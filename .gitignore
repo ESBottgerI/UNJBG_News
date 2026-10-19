@@ -33,8 +33,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files. Solo .env.example se versiona (es la plantilla que copian los
+# demas; sin esto, un clon nuevo no tendria con que configurar .env).
 .env*
+!.env.example
+
+# sesion de WhatsApp (Baileys): credenciales del dispositivo vinculado.
+# Si se pierde, hay que escanear el QR de nuevo.
+.wa-auth/
 
 # guias de agentes (no se commitean; agents/ guarda las copias)
 /agents/
@@ -43,6 +49,7 @@ yarn-error.log*
 
 # logs de fases (docs/plan.md si se trackea)
 /docs/log-fase-*.md
+/docs/arranque-fase-*.md
 
 # vercel
 .vercel

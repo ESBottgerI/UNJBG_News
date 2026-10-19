@@ -1,5 +1,7 @@
+import "../src/lib/env";
 import { prisma } from "../src/lib/prisma";
 import { runAdapterForSource } from "../src/adapters/runner";
+import { closeBrowser } from "../src/adapters/utils/browser";
 
 // CLI de desarrollo: corre el adaptador de una fuente al instante.
 //
@@ -41,4 +43,10 @@ main()
     console.error(error);
     process.exit(1);
   })
-  .finally(() => prisma.$disconnect());
+  .finally(async () => {
+    // Cerrar el navegador para que la CLI termine (Playwright deja el proceso
+    // de chromium vivo si no se cierra). En la app el scheduler reutiliza la
+    // instancia y no lo cierra.
+    await closeBrowser();
+    await prisma.$disconnect();
+  });

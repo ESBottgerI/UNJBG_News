@@ -18,7 +18,11 @@ export async function runAdapterForSource(
   }
 
   if (!INGESTIBLE.has(source.type)) {
-    const error = `tipo sin adaptador: ${source.type}`;
+    // WhatsApp no se consulta por intervalo: lo escucha el worker (Fase 4).
+    const error =
+      source.type === "WHATSAPP"
+        ? "WHATSAPP no se puede probar desde aca: lo consume el worker (npm run whatsapp:start)"
+        : `tipo sin adaptador: ${source.type}`;
     await markSourceError(sourceId, error);
     return { sourceId, fetched: 0, newItems: 0, duplicates: 0, error };
   }

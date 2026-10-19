@@ -139,16 +139,21 @@ export default async function AdminSourcesPage() {
                       <option value="DISABLED">DISABLED</option>
                     </select>
                   </label>
-                  <label className="flex items-center gap-2 text-sm text-zinc-700">
-                    Intervalo (min)
-                    <input
-                      name="pollIntervalMinutes"
-                      type="number"
-                      defaultValue={source.pollIntervalMinutes ?? ""}
-                      className="w-20 rounded border border-zinc-300 px-2 py-1 text-sm outline-none focus:border-zinc-500"
-                    />
-                  </label>
+                  {/* WhatsApp es push: no tiene intervalo de consulta. */}
+                  {source.type !== "WHATSAPP" && (
+                    <label className="flex items-center gap-2 text-sm text-zinc-700">
+                      Intervalo (min)
+                      <input
+                        name="pollIntervalMinutes"
+                        type="number"
+                        defaultValue={source.pollIntervalMinutes ?? ""}
+                        className="w-20 rounded border border-zinc-300 px-2 py-1 text-sm outline-none focus:border-zinc-500"
+                      />
+                    </label>
+                  )}
                 </div>
+
+                {source.type === "WHATSAPP" && <WhatsAppHint source={source} />}
 
                 <label className="flex flex-col gap-1 text-sm text-zinc-700">
                   config (JSON opcional)
@@ -178,15 +183,18 @@ export default async function AdminSourcesPage() {
                         Eliminar
                       </button>
                     </form>
-                    <form action={pollSource}>
-                      <input type="hidden" name="sourceId" value={source.id} />
-                      <button
-                        type="submit"
-                        className="rounded bg-blue-700 px-3 py-1.5 text-sm text-white hover:bg-blue-600"
-                      >
-                        Probar ahora
-                      </button>
-                    </form>
+                    {/* WhatsApp lo consume el worker, no se puede "probar" desde aca. */}
+                    {source.type !== "WHATSAPP" && (
+                      <form action={pollSource}>
+                        <input type="hidden" name="sourceId" value={source.id} />
+                        <button
+                          type="submit"
+                          className="rounded bg-blue-700 px-3 py-1.5 text-sm text-white hover:bg-blue-600"
+                        >
+                          Probar ahora
+                        </button>
+                      </form>
+                    )}
                   </div>
                 </form>
 
@@ -210,5 +218,35 @@ export default async function AdminSourcesPage() {
         </section>
       )}
     </div>
+  );
+}
+
+// Aviso para fuentes de WhatsApp: recuerda que hay que emparejar el bot y pegar
+// el jid del chat en config.chatId, porque WhatsApp no tiene URL ni intervalo.
+function WhatsAppHint({ source }: { source: { config: unknown } }) {
+  const config = (source.config ?? {}) as Record<string, unknown>;
+  const chatId = typeof config.chatId === "string" ? config.chatId : "";
+
+  return (
+    <p className="text-xs text-zinc-500">
+      {chatId ? (
+        <>
+          Chat:{" "}
+          <code className="rounded bg-zinc-100 px-1 py-0.5">{chatId}</code>
+        </>
+      ) : (
+        <>
+          Sin chatId: corre{" "}
+          <code className="rounded bg-zinc-100 px-1 py-0.5">
+            npm run whatsapp:chats
+          </code>{" "}
+          y pega el jid en config. El worker (
+          <code className="rounded bg-zinc-100 px-1 py-0.5">
+            npm run whatsapp:start
+          </code>
+          ) solo lo consume si la fuente esta ACTIVE.
+        </>
+      )}
+    </p>
   );
 }

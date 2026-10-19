@@ -14,16 +14,22 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:setup": "prisma migrate dev && prisma db seed",
-    "adapters:run": "tsx scripts/run-adapter.ts"
+    "adapters:run": "tsx scripts/run-adapter.ts",
+    "whatsapp:pair": "tsx scripts/whatsapp-pair.ts",
+    "whatsapp:chats": "tsx scripts/whatsapp-chats.ts",
+    "whatsapp:start": "tsx scripts/whatsapp-worker.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
     "cheerio": "^1.2.0",
+    "chromium-bidi": "^0.6.3",
     "next": "16.3.5",
     "node-cron": "^4.6.0",
+    "playwright": "^1.63.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "rss-parser": "^3.13.0"
@@ -32,11 +38,13 @@
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/node-cron": "^3.0.11",
+    "@types/qrcode-terminal": "^0.12.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "prisma": "^6.19.3",
+    "qrcode-terminal": "^0.12.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
     "typescript": "^5"
