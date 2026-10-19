@@ -98,9 +98,11 @@ publicidad (Google AdSense) a los lados.
 
 ## 8. Publicidad (Google AdSense)
 
-- Slot **leaderboard** arriba, **cajas** en sidebar y **tarjeta in-feed**.
-- AdSense exige web real y algo de trafico -> primera fase solo **placeholder** preparado;
-  la monetizacion se activa despues.
+- **Sin leaderboard** ni anuncio superior: el header queda limpio (decision del proyecto).
+- **Torres 160x600** en la columna izquierda y **cajas 300x250** en la derecha
+  (debajo de "Lo mas leido"). 2-3 slots por pagina como maximo.
+- AdSense exige web real y algo de trafico -> primera fase solo **placeholder** preparado
+  (un unico componente, `AdSlot`), la monetizacion se activa despues.
 
 ## 9. Hosting / despliegue
 

@@ -1,3 +1,5 @@
+import type { PrismaClient } from "@prisma/client";
+
 export const CATEGORIES = {
   LOCAL: "Local",
   UNJBG: "UNJBG",
@@ -29,7 +31,7 @@ export function categorize(text: string, currentCategoryId?: string | null): str
   return "Otros";
 }
 
-export async function getCategoryByName(name: string, prisma: any): Promise<{ id: string } | null> {
+export async function getCategoryByName(name: string, prisma: PrismaClient): Promise<{ id: string } | null> {
   const cat = await prisma.category.findUnique({ where: { name } });
   return cat;
 }

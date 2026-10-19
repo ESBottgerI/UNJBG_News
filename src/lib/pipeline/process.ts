@@ -1,13 +1,22 @@
 import { prisma } from "../prisma";
-import { ingestItem } from "../ingest";
 import { sanitizeBody, cleanText } from "./sanitize";
 import { categorize, getCategoryByName } from "./categorize";
-import { processImages } from "../media/image";
-import type { IngestInput } from "../ingest";
+import { processImages, type ProcessedImage } from "../media/image";
 
 export type ProcessOptions = {
   autoPublish?: boolean;
 };
+
+type RawPayload = {
+  title?: unknown;
+  body?: unknown;
+  images?: unknown;
+};
+
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((v): v is string => typeof v === "string");
+}
 
 export async function processRawItem(rawItemId: string, options: ProcessOptions = {}) {
   const raw = await prisma.rawItem.findUnique({
@@ -18,12 +27,15 @@ export async function processRawItem(rawItemId: string, options: ProcessOptions 
   if (!raw || raw.status !== "NEW") return null;
   if (raw.post) return raw.post;
 
-  const payload = raw.payload as any;
-  const title = (raw.title || payload?.title || "Sin título").toString();
-  const body = (payload?.body || "").toString();
-  const imageList = (raw.images as string[]) || (payload?.images as string[]) || [];
+  const payload = (raw.payload ?? {}) as RawPayload;
+  const title = String(raw.title ?? payload.title ?? "Sin título");
+  const body = String(payload.body ?? "");
+  const imageList = [
+    ...toStringArray(raw.images),
+    ...toStringArray(payload.images),
+  ];
 
-  let processedImages: any[] = [];
+  let processedImages: ProcessedImage[] = [];
   if (imageList.length > 0) {
     processedImages = await processImages(imageList);
   }
