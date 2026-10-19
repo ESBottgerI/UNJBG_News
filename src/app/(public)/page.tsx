@@ -22,7 +22,7 @@ export default async function HomePage({
   const [lead, ...rest] = list.posts;
 
   return (
-    <div className="grid grid-cols-1 gap-4 py-4 lg:grid-cols-[160px_minmax(0,1fr)_300px]">
+    <div className="pub-grid">
       <aside className="hidden lg:block">
         <LeftRail categories={categories} />
       </aside>

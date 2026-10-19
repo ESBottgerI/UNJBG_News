@@ -1,5 +1,9 @@
 # UNJBG News — Plan de Proyecto
 
+Documentacion detallada: [1. Introduccion](01-introduccion.md) y
+[4. Arquitectura](04-arquitectura.md). Este archivo es el plan de trabajo y el
+detalle de las fases.
+
 ## 1. Que es esto?
 
 Un sitio de noticias que **compila automaticamente** contenido desde varias fuentes

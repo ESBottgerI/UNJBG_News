@@ -101,3 +101,30 @@ body {
 .article-body video {
   max-width: 100%;
 }
+
+/* Grilla del contenido publico.
+   Una sola columna en pantallas chicas. A partir de 1024px aparecen los
+   laterales, con anchos en clamp() para que la columna se adapte al ancho de
+   pantalla en vez de quedar fija; asi los anuncios (160x600 y 300x250, que si
+   conservan su tamano estandar) no quedan pegados al borde de su columna. */
+.pub-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  padding-block: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .pub-grid {
+    grid-template-columns:
+      clamp(170px, 12vw, 180px)
+      minmax(0, 1fr)
+      clamp(306px, 20vw, 320px);
+    gap: 1.25rem;
+  }
+
+  /* Variante sin la columna izquierda (pagina de busqueda). */
+  .pub-grid--no-left {
+    grid-template-columns: minmax(0, 1fr) clamp(306px, 20vw, 320px);
+  }
+}

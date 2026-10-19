@@ -36,7 +36,7 @@ export default async function BuscarPage({
   const mostRead = await getMostRead();
 
   return (
-    <div className="grid grid-cols-1 gap-4 py-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="pub-grid pub-grid--no-left">
       <div>
         <h1 className="mb-3 border-b-2 border-[#0b3d91] pb-1 text-xl font-bold uppercase text-[#0b3d91]">
           Buscar noticias

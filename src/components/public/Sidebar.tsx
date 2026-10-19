@@ -15,11 +15,11 @@ function Box({ title, children }: { title?: string; children: React.ReactNode })
   );
 }
 
-// Columna izquierda: anuncios verticales + navegacion por secciones.
+// Columna izquierda: navegacion por secciones arriba (igual que "Lo mas leido"
+// en la derecha) y los anuncios verticales debajo.
 export function LeftRail({ categories }: { categories: CategoryRef[] }) {
   return (
     <div className="flex flex-col gap-3">
-      <AdSlot variant="tall" />
       {categories.length > 0 ? (
         <Box title="Secciones">
           <ul className="flex flex-col">
@@ -36,6 +36,7 @@ export function LeftRail({ categories }: { categories: CategoryRef[] }) {
           </ul>
         </Box>
       ) : null}
+      <AdSlot variant="tall" />
       <AdSlot variant="tall" />
     </div>
   );
