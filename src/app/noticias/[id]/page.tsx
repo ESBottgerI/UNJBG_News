@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import { prisma } from "../../../lib/prisma";
 
-export default async function NoticiaPage({ params }: { params: { id: string } }) {
+export default async function NoticiaPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  const p = await params;
   const post = await prisma.post.findUnique({
-    where: { id: params.id },
+    where: { id: p.id },
     include: { source: true, category: true },
   });
 
