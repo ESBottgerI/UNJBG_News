@@ -37,7 +37,7 @@ export default async function BuscarPage({
 
   return (
     <div className="pub-grid pub-grid--no-left">
-      <div>
+      <div className="min-w-0">
         <h1 className="mb-3 border-b-2 border-[#0b3d91] pb-1 text-xl font-bold uppercase text-[#0b3d91]">
           Buscar noticias
         </h1>
@@ -76,11 +76,11 @@ export default async function BuscarPage({
             <p className="mb-2 text-xs text-[#666]">
               {results.length} resultado{results.length === 1 ? "" : "s"} para “{q}”
             </p>
-            <div className="border border-[#ccc] bg-white px-3">
+            <div className="feed-grid">
               {results.map((r) => (
                 <article
                   key={r.id}
-                  className="flex gap-3 border-b border-[#e5e5e5] py-3 last:border-b-0"
+                  className="flex gap-3 border border-[#ccc] bg-white p-3"
                 >
                   {r.thumbnailUrl || r.imageUrl ? (
                     <Link
@@ -94,7 +94,7 @@ export default async function BuscarPage({
                       />
                     </Link>
                   ) : null}
-                  <div className="min-w-0">
+                  <div className="min-w-0 break-words">
                     <h2 className="text-base font-bold leading-snug">
                       <Link
                         href={`/noticias/${r.id}`}

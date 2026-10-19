@@ -16,7 +16,7 @@ export default async function PublicLayout({
   return (
     <div className="min-h-screen bg-white text-[#111]">
       <SiteHeader categories={categories} />
-      <main className="mx-auto w-full max-w-[1080px] px-3">{children}</main>
+      <main className="site-shell">{children}</main>
       <SiteFooter categories={categories} />
     </div>
   );

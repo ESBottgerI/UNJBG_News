@@ -49,7 +49,7 @@ export default async function SeccionPage({ params, searchParams }: Props) {
         <LeftRail categories={categories} />
       </aside>
 
-      <div>
+      <div className="min-w-0">
         <h1 className="mb-3 border-b-2 border-[#0b3d91] pb-1 text-xl font-bold uppercase text-[#0b3d91]">
           {category.name}
         </h1>
@@ -57,15 +57,15 @@ export default async function SeccionPage({ params, searchParams }: Props) {
         {list.posts.length === 0 ? (
           <EmptyState title={`Aun no hay noticias en ${category.name}`} />
         ) : (
-          <div className="flex flex-col gap-4">
-            {lead ? <LeadCard post={lead} /> : null}
-            {rest.length > 0 ? (
-              <div className="border border-[#ccc] bg-white px-3">
-                {rest.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
+          <div className="feed-grid">
+            {lead ? (
+              <div className="feed-lead">
+                <LeadCard post={lead} />
               </div>
             ) : null}
+            {rest.map((post) => (
+              <PostCard key={post.id} post={post} variant="card" />
+            ))}
           </div>
         )}
 

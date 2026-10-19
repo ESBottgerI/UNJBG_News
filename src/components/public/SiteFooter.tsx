@@ -5,7 +5,7 @@ export function SiteFooter({ categories }: { categories: CategoryRef[] }) {
   const year = new Date().getFullYear();
   return (
     <footer className="mt-6 border-t border-[#ccc] bg-[#f7f7f7]">
-      <div className="mx-auto flex max-w-[1080px] flex-wrap items-center gap-x-4 gap-y-1 px-3 py-4 text-xs text-[#666]">
+      <div className="site-shell flex flex-wrap items-center gap-x-4 gap-y-1 py-4 text-xs text-[#666]">
         <span className="font-bold text-[#0b3d91]">UNJBG News</span>
         <Link href="/" className="hover:underline">
           Inicio

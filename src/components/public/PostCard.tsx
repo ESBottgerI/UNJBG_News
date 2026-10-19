@@ -36,7 +36,7 @@ export function LeadCard({ post }: { post: PostListItem }) {
       <Link href={href} className="block aspect-[16/9] overflow-hidden bg-[#ececec]">
         <PostImage src={post.imageUrl ?? post.thumbnailUrl} alt={post.title} sizes="600px" />
       </Link>
-      <div className="p-3">
+      <div className="p-3 break-words">
         <Meta post={post} />
         <h2 className="mt-1 text-2xl font-bold leading-tight">
           <Link href={href} className="text-[#111] hover:text-[#0b3d91] hover:underline">
@@ -53,12 +53,24 @@ export function LeadCard({ post }: { post: PostListItem }) {
   );
 }
 
-// Tarjeta de la lista del feed.
-export function PostCard({ post }: { post: PostListItem }) {
+// Tarjeta de la lista del feed. Con variant="card" cada tarjeta lleva su propio
+// borde (la usa la rejilla de dos columnas); con "row" queda la lista clasica
+// de filas separadas por una linea.
+export function PostCard({
+  post,
+  variant = "row",
+}: {
+  post: PostListItem;
+  variant?: "row" | "card";
+}) {
   const href = `/noticias/${post.id}`;
   const thumb = post.thumbnailUrl ?? post.imageUrl;
+  const shell =
+    variant === "card"
+      ? "flex gap-3 border border-[#ccc] bg-white p-3"
+      : "flex gap-3 border-b border-[#e5e5e5] py-3 last:border-b-0";
   return (
-    <article className="flex gap-3 border-b border-[#e5e5e5] py-3 last:border-b-0">
+    <article className={shell}>
       {thumb ? (
         <Link
           href={href}
@@ -67,7 +79,7 @@ export function PostCard({ post }: { post: PostListItem }) {
           <PostImage src={thumb} alt={post.title} sizes="112px" />
         </Link>
       ) : null}
-      <div className="min-w-0">
+      <div className="min-w-0 break-words">
         <h3 className="text-base font-bold leading-snug">
           <Link href={href} className="text-[#111] hover:text-[#0b3d91] hover:underline">
             {post.title}

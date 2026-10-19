@@ -61,7 +61,7 @@ export default async function NoticiaPage({ params }: Props) {
   ]);
 
   return (
-    <div className="pub-grid">
+    <div className="pub-grid pub-grid--article">
       <aside className="hidden lg:block">
         <LeftRail categories={categories} />
       </aside>
@@ -84,7 +84,7 @@ export default async function NoticiaPage({ params }: Props) {
           ) : null}
         </nav>
 
-        <h1 className="text-3xl font-bold leading-tight">{post.title}</h1>
+        <h1 className="break-words text-3xl font-bold leading-tight">{post.title}</h1>
 
         <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-[#666]">
           {post.category ? (

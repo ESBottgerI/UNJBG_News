@@ -17,7 +17,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
 export function SiteHeader({ categories }: { categories: CategoryRef[] }) {
   return (
     <header className="border-b border-[#ccc] bg-white">
-      <div className="mx-auto flex max-w-[1080px] flex-wrap items-end justify-between gap-2 px-3 pt-3">
+      <div className="site-shell flex flex-wrap items-end justify-between gap-2 pt-3">
         <div>
           <Link href="/" className="text-3xl font-bold tracking-tight text-[#0b3d91]">
             UNJBG News
@@ -30,7 +30,7 @@ export function SiteHeader({ categories }: { categories: CategoryRef[] }) {
       </div>
 
       <nav className="mt-2 bg-[#0b3d91]">
-        <div className="mx-auto flex max-w-[1080px] flex-wrap items-center px-3">
+        <div className="site-shell flex flex-wrap items-center">
           <NavLink href="/">Inicio</NavLink>
           {categories.map((c) => (
             <NavLink key={c.id} href={`/seccion/${c.slug}`}>

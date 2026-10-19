@@ -102,11 +102,21 @@ body {
   max-width: 100%;
 }
 
-/* Grilla del contenido publico.
-   Una sola columna en pantallas chicas. A partir de 1024px aparecen los
-   laterales, con anchos en clamp() para que la columna se adapte al ancho de
-   pantalla en vez de quedar fija; asi los anuncios (160x600 y 300x250, que si
-   conservan su tamano estandar) no quedan pegados al borde de su columna. */
+/* Contenedor del sitio publico: ocupa todo el ancho disponible con un margen
+   proporcional al viewport. El tope de 1800px solo actua en monitores
+   ultrawide; en uno de 1920 el margen real es minimo. Lo usan el encabezado,
+   el pie y el contenido, para que queden siempre alineados entre si. */
+.site-shell {
+  width: 100%;
+  max-width: 1800px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 2vw, 48px);
+}
+
+/* Grilla del contenido publico. Una sola columna en pantallas chicas; a partir
+   de 1024px aparecen los laterales con anchos en clamp() (se adaptan al ancho
+   en vez de quedar fijos) y el centro flexible. Los anuncios conservan su
+   tamano estandar (160x600 y 300x250). */
 .pub-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -114,17 +124,47 @@ body {
   padding-block: 1rem;
 }
 
+/* Rejilla del listado de noticias. En pantallas anchas pasa a dos columnas
+   para que el titular no quede en una linea larguisima. */
+.feed-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-content: start;
+}
+
 @media (min-width: 1024px) {
   .pub-grid {
     grid-template-columns:
-      clamp(170px, 12vw, 180px)
+      clamp(170px, 12vw, 240px)
       minmax(0, 1fr)
-      clamp(306px, 20vw, 320px);
-    gap: 1.25rem;
+      clamp(306px, 21vw, 380px);
+    gap: clamp(16px, 1.5vw, 36px);
   }
 
   /* Variante sin la columna izquierda (pagina de busqueda). */
   .pub-grid--no-left {
-    grid-template-columns: minmax(0, 1fr) clamp(306px, 20vw, 320px);
+    grid-template-columns: minmax(0, 1fr) clamp(306px, 21vw, 380px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .feed-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* La nota principal ocupa las dos columnas de la rejilla. */
+  .feed-grid > .feed-lead {
+    grid-column: 1 / -1;
+  }
+
+  /* Ficha de noticia: el centro se limita a una medida de lectura comoda y el
+     espacio sobrante se reparte entre las columnas, no en los bordes. */
+  .pub-grid--article {
+    grid-template-columns:
+      clamp(170px, 12vw, 240px)
+      minmax(0, 48rem)
+      clamp(306px, 21vw, 380px);
+    justify-content: space-between;
   }
 }

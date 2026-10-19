@@ -37,7 +37,6 @@ export function LeftRail({ categories }: { categories: CategoryRef[] }) {
         </Box>
       ) : null}
       <AdSlot variant="tall" />
-      <AdSlot variant="tall" />
     </div>
   );
 }
@@ -56,7 +55,7 @@ export function RightSidebar({ mostRead }: { mostRead: PostListItem[] }) {
                 </span>
                 <Link
                   href={`/noticias/${p.id}`}
-                  className="text-sm font-medium leading-snug text-[#111] hover:text-[#0b3d91] hover:underline"
+                  className="break-words text-sm font-medium leading-snug text-[#111] hover:text-[#0b3d91] hover:underline"
                 >
                   {p.title}
                 </Link>

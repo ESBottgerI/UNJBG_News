@@ -103,8 +103,12 @@ publicidad (Google AdSense) a los lados.
 ## 8. Publicidad (Google AdSense)
 
 - **Sin leaderboard** ni anuncio superior: el header queda limpio (decision del proyecto).
-- **Torres 160x600** en la columna izquierda y **cajas 300x250** en la derecha
-  (debajo de "Lo mas leido"). 2-3 slots por pagina como maximo.
+- **Una torre 160x600** en la columna izquierda (debajo del bloque "Secciones") y
+  **dos cajas 300x250** en la derecha (debajo de "Lo mas leido"): 3 slots por pagina.
+- Contenedor **fluido** (clase `.site-shell` en `globals.css`), sin ancho fijo: ocupa el
+  ancho de la pantalla con un margen proporcional y un tope de 1800px solo para
+  ultrawide. En pantallas anchas (1280px o mas) el listado central pasa a **dos
+  columnas** y el feed de la portada y las secciones ocupa todo el ancho.
 - AdSense exige web real y algo de trafico -> primera fase solo **placeholder** preparado
   (un unico componente, `AdSlot`), la monetizacion se activa despues.
 
