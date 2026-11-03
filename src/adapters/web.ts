@@ -1,7 +1,7 @@
 import * as cheerio from "cheerio";
 import type { Source } from "@prisma/client";
 import type { FetchedItem, NewsAdapter } from "./types";
-import { fetchText, fetchWithRetry } from "./utils/http";
+import { fetchText, fetchWithRetry, sleep } from "./utils/http";
 
 // Adaptador WEB generico para sitios de noticias clasicos:
 // 1. Lee el sitemap.xml de la fuente (o el path indicado en config).
@@ -38,12 +38,22 @@ export class SitemapWebAdapter implements NewsAdapter {
         ? this.config.maxItems
         : MAX_DEFAULT_ITEMS;
 
+    // Pausa configurable entre articulos (Fase 7): evita rafagas contra el
+    // mismo sitio. Se define por fuente en config.requestDelayMs.
+    const requestDelayMs =
+      typeof this.config.requestDelayMs === "number"
+        ? Math.max(0, this.config.requestDelayMs)
+        : 0;
+
     const items: FetchedItem[] = [];
     for (const url of locs.slice(0, maxItems)) {
       try {
         items.push(await this.extractArticle(url));
       } catch {
         // Una pagina que falle no aborta el resto del sitemap.
+      }
+      if (requestDelayMs > 0) {
+        await sleep(requestDelayMs);
       }
     }
 

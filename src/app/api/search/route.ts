@@ -3,10 +3,28 @@
 // endpoint queda para consumidores externos o futuros buscadores en cliente.
 import { NextResponse } from "next/server";
 import { searchPublished } from "@/lib/posts";
+import { envInt, getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  // Limite de busquedas por IP (Fase 7): evita que un cliente sature la
+  // busqueda full-text de Postgres.
+  const limit = rateLimit({
+    key: `search:${getClientIp(request)}`,
+    limit: envInt("SEARCH_RATE_LIMIT_PER_MIN", 60),
+    windowMs: 60_000,
+  });
+  if (!limit.ok) {
+    return NextResponse.json(
+      { results: [], error: "demasiadas peticiones; reintenta mas tarde" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(limit.retryAfterSeconds) },
+      }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const q = (searchParams.get("q") ?? "").trim();
 

@@ -1,5 +1,11 @@
 import { NextRequest } from "next/server";
 import { ingestItem } from "@/lib/ingest";
+import {
+  envInt,
+  getClientIp,
+  rateLimit,
+  type RateLimitResult,
+} from "@/lib/rate-limit";
 
 // Endpoint de ingesta: recibe contenido de los adaptadores.
 // POST /api/ingest  con header  x-ingest-key: <INGEST_API_KEY>
@@ -14,12 +20,37 @@ import { ingestItem } from "@/lib/ingest";
 
 const EXPECTED_KEY = process.env.INGEST_API_KEY;
 
+function tooManyRequests(result: RateLimitResult): Response {
+  return Response.json(
+    { error: "demasiadas peticiones; reintenta mas tarde" },
+    {
+      status: 429,
+      headers: {
+        "Retry-After": String(result.retryAfterSeconds),
+        "X-RateLimit-Limit": String(result.limit),
+        "X-RateLimit-Remaining": "0",
+      },
+    }
+  );
+}
+
 export async function POST(request: NextRequest) {
   if (!EXPECTED_KEY) {
     return Response.json(
       { error: "INGEST_API_KEY no configurado en el servidor" },
       { status: 500 }
     );
+  }
+
+  // Limite de peticiones por IP (Fase 7). Los adaptadores locales casi nunca
+  // superan esto; protege el endpoint si queda expuesto.
+  const limit = rateLimit({
+    key: `ingest:${getClientIp(request)}`,
+    limit: envInt("INGEST_RATE_LIMIT_PER_MIN", 120),
+    windowMs: 60_000,
+  });
+  if (!limit.ok) {
+    return tooManyRequests(limit);
   }
 
   const key = request.headers.get("x-ingest-key");
