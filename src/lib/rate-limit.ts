@@ -116,11 +116,3 @@ export function getClientIpFromHeaders(headers: HeaderReader): string {
 export function getClientIp(request: Request): string {
   return getClientIpFromHeaders(request.headers);
 }
-
-// Lee un entero positivo de entorno, con valor por defecto.
-export function envInt(name: string, fallback: number): number {
-  const raw = process.env[name];
-  if (!raw) return fallback;
-  const value = Number(raw);
-  return Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
-}

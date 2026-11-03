@@ -3,7 +3,8 @@
 // endpoint queda para consumidores externos o futuros buscadores en cliente.
 import { NextResponse } from "next/server";
 import { searchPublished } from "@/lib/posts";
-import { envInt, getClientIp, rateLimit } from "@/lib/rate-limit";
+import { envInt } from "@/lib/config";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 

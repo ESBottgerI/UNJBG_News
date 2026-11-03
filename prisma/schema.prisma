@@ -37,6 +37,11 @@ enum PostStatus {
   REJECTED
 }
 
+enum RunStatus {
+  OK
+  ERROR
+}
+
 model Source {
   id                  String       @id @default(cuid())
   name                String
@@ -48,13 +53,36 @@ model Source {
   pollIntervalMinutes Int?
   lastRunAt           DateTime?
   lastError           String?
+  // Salud de la fuente (Fase 7).
+  lastSuccessAt       DateTime?
+  lastDurationMs      Int?
+  consecutiveFailures Int          @default(0)
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
   rawItems RawItem[]
   posts    Post[]
+  runs     SourceRun[]
 
   @@unique([name, type])
+}
+
+// Historial de corridas de un adaptador (Fase 7). Sirve para ver si una fuente
+// se esta degradando y para el panel de salud del admin.
+model SourceRun {
+  id         String    @id @default(cuid())
+  sourceId   String
+  source     Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  status     RunStatus @default(OK)
+  fetched    Int       @default(0)
+  newItems   Int       @default(0)
+  duplicates Int       @default(0)
+  durationMs Int?
+  error      String?
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  @@index([sourceId, startedAt])
 }
 
 model User {
@@ -126,4 +154,8 @@ model Post {
   @@index([status, views])
   @@index([categoryId])
   @@index([title])
+  // Estos indices los crea la migracion de Fase 5 con SQL. Se declaran aqui
+  // para que Prisma no los detecte como "sobrantes" y quiera borrarlos.
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "Post_title_trgm_idx")
+  @@index([searchVector], type: Gin, map: "Post_searchVector_idx")
 }

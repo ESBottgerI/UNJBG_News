@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { ingestItem } from "@/lib/ingest";
+import { envInt } from "@/lib/config";
 import {
-  envInt,
   getClientIp,
   rateLimit,
   type RateLimitResult,

@@ -1,18 +1,25 @@
+import type { Source } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { ingestItem } from "../lib/ingest";
 import { processRawItem } from "../lib/pipeline/process";
+import { sendAlert } from "../lib/alerts";
+import { envInt } from "../lib/config";
+import { logger } from "../lib/logger";
 import { buildAdapter, INGESTIBLE_TYPES, isDue } from "./index";
 import type { AdapterRunResult } from "./types";
 
 const INGESTIBLE = new Set<string>(INGESTIBLE_TYPES);
+const ALERT_AFTER_FAILURES = envInt("ALERT_AFTER_FAILURES", 3);
+const MAX_ERROR_LENGTH = 2000;
 
 // Runner de adaptadores: corre el adaptador de una fuente, entrega cada item
 // al pipeline de ingesta (que hace dedup) y registra el resultado en la fuente
-// (lastRunAt / lastError) para verlo en el admin.
+// (lastRunAt / lastError) y en el historial SourceRun (Fase 7).
 
 export async function runAdapterForSource(
   sourceId: string
 ): Promise<AdapterRunResult> {
+  const startedAt = new Date();
   const source = await prisma.source.findUnique({ where: { id: sourceId } });
   if (!source) {
     throw new Error(`fuente no encontrada: ${sourceId}`);
@@ -24,7 +31,7 @@ export async function runAdapterForSource(
       source.type === "WHATSAPP"
         ? "WHATSAPP no se puede probar desde aca: lo consume el worker (npm run whatsapp:start)"
         : `tipo sin adaptador: ${source.type}`;
-    await markSourceError(sourceId, error);
+    await markSourceError(source, error, startedAt, {});
     return { sourceId, fetched: 0, newItems: 0, duplicates: 0, error };
   }
 
@@ -35,7 +42,7 @@ export async function runAdapterForSource(
     fetched = await adapter.fetchItems();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await markSourceError(sourceId, message);
+    await markSourceError(source, message, startedAt, {});
     return { sourceId, fetched: 0, newItems: 0, duplicates: 0, error: message };
   }
 
@@ -58,7 +65,18 @@ export async function runAdapterForSource(
           duplicates++;
         } else {
           newItems++;
-          try { await processRawItem(result.rawItemId); } catch (e) { console.error('pipeline error', e); }
+          try {
+            await processRawItem(result.rawItemId);
+          } catch (pipelineError) {
+            logger.error("pipeline.item.failed", {
+              sourceId,
+              rawItemId: result.rawItemId,
+              error:
+                pipelineError instanceof Error
+                  ? pipelineError.message
+                  : String(pipelineError),
+            });
+          }
         }
       } else {
         errors.push(result.error.message);
@@ -68,7 +86,12 @@ export async function runAdapterForSource(
     }
   }
 
-  await markSourceSuccess(sourceId);
+  await markSourceSuccess(source, startedAt, {
+    fetched: fetched.length,
+    newItems,
+    duplicates,
+    itemErrors: errors,
+  });
 
   const result: AdapterRunResult = {
     sourceId,
@@ -101,16 +124,126 @@ export async function runDueSources(maxSources = 5): Promise<AdapterRunResult[]>
   return results;
 }
 
-async function markSourceSuccess(sourceId: string): Promise<void> {
+type RunCounts = {
+  fetched?: number;
+  newItems?: number;
+  duplicates?: number;
+  itemErrors?: string[];
+};
+
+async function markSourceSuccess(
+  source: Source,
+  startedAt: Date,
+  counts: RunCounts
+): Promise<void> {
+  const finishedAt = new Date();
+  const durationMs = finishedAt.getTime() - startedAt.getTime();
+  const itemErrors = counts.itemErrors ?? [];
+  const error = itemErrors.length > 0 ? truncate(itemErrors.join(" | ")) : null;
+
   await prisma.source.update({
-    where: { id: sourceId },
-    data: { lastRunAt: new Date(), lastError: null },
+    where: { id: source.id },
+    data: {
+      lastRunAt: finishedAt,
+      lastSuccessAt: finishedAt,
+      lastDurationMs: durationMs,
+      lastError: error,
+      consecutiveFailures: 0,
+    },
   });
+
+  await prisma.sourceRun.create({
+    data: {
+      sourceId: source.id,
+      status: "OK",
+      fetched: counts.fetched ?? 0,
+      newItems: counts.newItems ?? 0,
+      duplicates: counts.duplicates ?? 0,
+      durationMs,
+      error,
+      startedAt,
+      finishedAt,
+    },
+  });
+
+  logger.info("adapter.run.ok", {
+    sourceId: source.id,
+    sourceName: source.name,
+    sourceType: source.type,
+    durationMs,
+    fetched: counts.fetched ?? 0,
+    newItems: counts.newItems ?? 0,
+    duplicates: counts.duplicates ?? 0,
+    itemErrors: itemErrors.length,
+  });
+
+  // Aviso de recuperacion: solo si venia de una racha de fallos alertada.
+  if (source.consecutiveFailures >= ALERT_AFTER_FAILURES) {
+    void sendAlert({
+      title: "Fuente recuperada",
+      message: `${source.name} (${source.type}) volvio a responder despues de ${source.consecutiveFailures} fallos.`,
+      sourceId: source.id,
+      level: "info",
+    });
+  }
 }
 
-async function markSourceError(sourceId: string, message: string): Promise<void> {
-  await prisma.source.update({
-    where: { id: sourceId },
-    data: { lastRunAt: new Date(), lastError: message },
+async function markSourceError(
+  source: Source,
+  message: string,
+  startedAt: Date,
+  counts: RunCounts
+): Promise<void> {
+  const finishedAt = new Date();
+  const durationMs = finishedAt.getTime() - startedAt.getTime();
+  const safeMessage = truncate(message);
+
+  const updated = await prisma.source.update({
+    where: { id: source.id },
+    data: {
+      lastRunAt: finishedAt,
+      lastDurationMs: durationMs,
+      lastError: safeMessage,
+      consecutiveFailures: { increment: 1 },
+    },
   });
+
+  await prisma.sourceRun.create({
+    data: {
+      sourceId: source.id,
+      status: "ERROR",
+      fetched: counts.fetched ?? 0,
+      newItems: counts.newItems ?? 0,
+      duplicates: counts.duplicates ?? 0,
+      durationMs,
+      error: safeMessage,
+      startedAt,
+      finishedAt,
+    },
+  });
+
+  logger.error("adapter.run.error", {
+    sourceId: source.id,
+    sourceName: source.name,
+    sourceType: source.type,
+    durationMs,
+    consecutiveFailures: updated.consecutiveFailures,
+    error: safeMessage,
+  });
+
+  // Alerta solo al cruzar el umbral (evita un mensaje por cada fallo seguido).
+  if (updated.consecutiveFailures === ALERT_AFTER_FAILURES) {
+    void sendAlert({
+      title: "Fuente con fallos repetidos",
+      message: `${source.name} (${source.type}) fallo ${ALERT_AFTER_FAILURES} veces seguidas. Ultimo error: ${safeMessage}`,
+      sourceId: source.id,
+      level: "error",
+    });
+  }
+}
+
+function truncate(value: string): string {
+  return value.length > MAX_ERROR_LENGTH
+    ? `${value.slice(0, MAX_ERROR_LENGTH)}...`
+    : value;
 }

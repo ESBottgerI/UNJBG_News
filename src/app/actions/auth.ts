@@ -9,8 +9,8 @@ import {
   destroySession,
   setSessionCookie,
 } from "@/lib/auth/session";
+import { envInt } from "@/lib/config";
 import {
-  envInt,
   getClientIpFromHeaders,
   rateLimit,
   resetRateLimit,
