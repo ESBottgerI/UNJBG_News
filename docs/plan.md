@@ -1,7 +1,8 @@
 # UNJBG News — Plan de Proyecto
 
-Documentacion detallada: [1. Introduccion](01-introduccion.md) y
-[4. Arquitectura](04-arquitectura.md). Este archivo es el plan de trabajo y el
+Documentacion detallada: [1. Introduccion](01-introduccion.md),
+[4. Arquitectura](04-arquitectura.md), [Fase 6. Sitio publico](fase-6-sitio-publico.md)
+y [modelo entidad-relacion](er-model.md). Este archivo es el plan de trabajo y el
 detalle de las fases.
 
 ## 1. Que es esto?
@@ -66,16 +67,21 @@ publicidad (Google AdSense) a los lados.
 
 ## 5. Fases de implementacion
 
-| Fase | Que entrega | Tiempo aprox |
-|------|-------------|--------------|
-| 0 | Repo, Docker Compose, config de entorno, registro de fuentes | 2-3 dias |
-| 1 | Modelo de datos + panel admin (colas de revision, editar/descartar, login) | 5-7 dias |
-| 2 | Adaptadores web: framework + 2-3 sitios reales (sitemap->Cheerio, Playwright si hace falta) + RSS | 5-7 dias |
-| 3 | Adaptador Facebook: Graph API publico, luego Playwright con sesion para grupos privados | 4-6 dias |
-| 4 | Adaptador WhatsApp: sesion Baileys, listener de canales + grupos, imagenes | 4-6 dias |
-| 5 | Pipeline final: sharp, sanitizacion, categorias por palabras, busqueda en espanol | 3-4 dias |
-| 6 | Sitio publico estilo 2010: header minimo + secciones, feed central, ads en sidebar, ficha de noticia, sitemap, SEO | 4-6 dias |
-| 7 | Robustez: limites de peticiones, alertas de error, backup automatico de BD | 2-3 dias |
+| Fase | Que entrega | Tiempo aprox | Estado |
+|------|-------------|--------------|--------|
+| 0 | Repo, Docker Compose, config de entorno, registro de fuentes | 2-3 dias | Completada |
+| 1 | Modelo de datos + panel admin (colas de revision, editar/descartar, login) | 5-7 dias | Completada |
+| 2 | Adaptadores web: framework + 2-3 sitios reales (sitemap->Cheerio, Playwright si hace falta) + RSS | 5-7 dias | Completada |
+| 3 | Adaptador Facebook: Graph API publico, luego Playwright con sesion para grupos privados | 4-6 dias | Completada |
+| 4 | Adaptador WhatsApp: sesion Baileys, listener de canales + grupos, imagenes | 4-6 dias | Completada |
+| 5 | Pipeline final: sharp, sanitizacion, categorias por palabras, busqueda en espanol | 3-4 dias | Completada en rama |
+| 6 | Sitio publico estilo 2010: header minimo + secciones, feed central, ads en sidebar, ficha de noticia, sitemap, SEO | 4-6 dias | Completada en rama |
+| 7 | Robustez: limites de peticiones, alertas de error, backup automatico de BD | 2-3 dias | Pendiente |
+
+Estado al 2026-11-03: fases 0 a 6 implementadas y verificadas; las ramas de las
+fases 5 y 6 (`feat/pipeline-search` y `feat/public-site`) todavia no estan
+mergeadas a `main`. El detalle de la Fase 6 esta en
+[fase-6-sitio-publico.md](fase-6-sitio-publico.md).
 
 **Total estimado: ~1.5-2 meses** trabajando medio tiempo.
 
@@ -114,9 +120,12 @@ publicidad (Google AdSense) a los lados.
 
 ## 9. Hosting / despliegue
 
-- Fase local: `docker compose up` en la maquina de desarrollo.
-- VPS: mismo Docker, volumen de disco para imagenes, `nginx` para servir media + HTTPS
-  (certbot / caddy), backup diario de Postgres.
+- **Local:** PostgreSQL 16 en un contenedor podman (`unjbg-db`, puerto 5432) y la
+  app con `npm run dev`. En la maquina de desarrollo no hay Docker, asi que
+  `compose.yaml` no se usa ahi; el contenedor se levanta con `podman start unjbg-db`.
+- **VPS:** `docker compose --profile full up -d` (app + postgres + nginx), volumen
+  de disco para imagenes, `nginx` para servir media + HTTPS (certbot / caddy),
+  backup diario de Postgres.
 - Sin costos de nube por uso: todo en un solo VPS.
 
 ## 10. Supuestos / decisiones
