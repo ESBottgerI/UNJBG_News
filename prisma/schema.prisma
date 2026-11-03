@@ -117,9 +117,13 @@ model Post {
   moderatedAt DateTime?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  searchVector String?
+  // Columna tsvector gestionada por trigger (Fase 5/6). Prisma la expone como
+  // Unsupported porque no puede mapear tsvector; la busqueda se hace con SQL.
+  searchVector Unsupported("tsvector")?
+  views        Int        @default(0)
 
   @@index([status, publishedAt])
+  @@index([status, views])
   @@index([categoryId])
   @@index([title])
 }
