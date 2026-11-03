@@ -4,23 +4,21 @@
 // componente es el unico lugar donde hay que inyectar el script de Google y
 // reemplazar el contenido del placeholder por <ins class="adsbygoogle">.
 //
-// Variantes:
-//   - "box":    300x250 (columna derecha)
-//   - "tall":   160x600 (columna izquierda)
-//   - "in-feed": banner horizontal entre noticias
+// Variantes (solo los formatos IAB aprobados para el sitio; no hay banner
+// horizontal ni leaderboard por decision del proyecto):
+//   - "box":  300x250 (columna derecha)
+//   - "tall": 160x600 (columna izquierda)
 
-export type AdVariant = "box" | "tall" | "in-feed";
+export type AdVariant = "box" | "tall";
 
 const SIZES: Record<AdVariant, string> = {
   box: "h-[250px] w-full max-w-[300px]",
   tall: "h-[600px] w-full max-w-[160px]",
-  "in-feed": "h-[90px] w-full",
 };
 
 const LABELS: Record<AdVariant, string> = {
   box: "300 x 250",
   tall: "160 x 600",
-  "in-feed": "banner",
 };
 
 export function AdSlot({

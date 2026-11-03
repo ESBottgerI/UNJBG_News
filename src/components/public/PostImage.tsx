@@ -25,6 +25,9 @@ export function PostImage({
   }
 
   return (
+    // Las imagenes ya vienen procesadas por el pipeline (sharp) y no se guardan
+    // dimensiones exactas por noticia, asi que next/image no aporta aca.
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt={alt}

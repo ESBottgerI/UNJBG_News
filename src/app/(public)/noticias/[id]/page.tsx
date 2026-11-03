@@ -100,6 +100,8 @@ export default async function NoticiaPage({ params }: Props) {
         </div>
 
         {post.imageUrl ? (
+          // Imagen ya procesada por el pipeline; ver PostImage.tsx.
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={post.imageUrl}
             alt={post.title}
