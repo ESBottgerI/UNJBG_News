@@ -4,12 +4,9 @@ Compilador automático de noticias de Tacna y la región desde diferentes fuente
 (WhatsApp Channels, grupos de WhatsApp, Facebook y sitios web), con estilo
 clásico ~2010 y panel de moderación.
 
-El plan completo está en [`docs/plan.md`](docs/plan.md).
-
 ## Estado del proyecto
 
-**Fases 0 a 7 implementadas y verificadas en local** (la 7 esta en la rama
-`feat/hardening`; ver [`docs/fase-7-robustez.md`](docs/fase-7-robustez.md)):
+**Fases 0 a 8.1 implementadas y verificadas en local** (rama `feat/hardening`):
 
 - App Next.js 16 + TypeScript
 - Docker Compose (Postgres 16 + app + nginx)
@@ -36,12 +33,10 @@ El plan completo está en [`docs/plan.md`](docs/plan.md).
   respaldos de base de datos y despliegue endurecido (worker + nginx).
 - **Entorno de desarrollo (Fase 8.0)**: imagen Podman con el toolchain completo
   (Node 22, Prisma, Chromium) y scripts `dev-*` para levantar app + base sin
-  instalar nada en el host. Ver
-  [`docs/desarrollo-en-contenedor.md`](docs/desarrollo-en-contenedor.md).
+  instalar nada en el host.
 - **Tests y CI (Fase 8.1)**: 100 tests unitarios, 80 de integración contra
   Postgres y 17 E2E con Playwright, más GitHub Actions en cada PR. Incluye la
-  corrección del XSS almacenado en la aprobación de la cola. Ver
-  [`docs/fase-8-calidad.md`](docs/fase-8-calidad.md).
+  corrección del XSS almacenado en la aprobación de la cola.
 
 ## Requisitos
 
@@ -76,8 +71,8 @@ El codigo se monta desde el host, asi que el hot reload funciona igual que con
 ./scripts/dev-down.sh                           # bajar
 ```
 
-Guia completa (SELinux, volumenes, WhatsApp, tests, problemas comunes):
-[`docs/desarrollo-en-contenedor.md`](docs/desarrollo-en-contenedor.md).
+La guia completa (SELinux, volumenes, WhatsApp, tests, problemas comunes) se
+incluye en el paquete de entrega (`handover/`).
 
 ## Puesta en marcha sin contenedores
 
@@ -149,8 +144,7 @@ puerto 3100 con `distDir=.next-e2e`, así no interfiere con el servidor de
 desarrollo de 3000.
 
 El CI (`.github/workflows/ci.yml`) corre lint, tipos, unitarios, integración y
-E2E en cada PR usando servicios de Postgres 16. Detalle de la suite, el seed E2E
-y la regresión de XSS: [`docs/fase-8-calidad.md`](docs/fase-8-calidad.md).
+E2E en cada PR usando servicios de Postgres 16.
 
 ## Adaptadores
 
@@ -258,8 +252,7 @@ coloca en `deploy/certs/`. Las imágenes procesadas viven en el volumen `media`
 
 Antes de exponerlo: completar `.env`, usar un numero SIM dedicado para WhatsApp,
 activar HTTPS y programar `npm run db:backup`. El checklist completo y las
-limitaciones conocidas estan en
-[`docs/fase-7-robustez.md`](docs/fase-7-robustez.md).
+limitaciones conocidas se incluyen en el paquete de entrega.
 
 ## Estructura
 
@@ -278,5 +271,4 @@ deploy/           nginx.conf, certificados, postgres-init (bases de test)
 compose.yaml      Servicios Docker (db siempre; app+worker+web perfil "full")
 Dockerfile        Build standalone de la app + target worker (WhatsApp)
 Dockerfile.dev    Imagen de desarrollo (toolchain + Chromium)
-docs/plan.md      Plan de proyecto completo
 ```
