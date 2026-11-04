@@ -1,8 +1,16 @@
 node_modules
 .next
+.next-e2e
 .git
 docs
 deploy/certs
 .env*
 *.tsbuildinfo
 next-env.d.ts
+backups
+handover
+public/media
+.wa-auth
+coverage
+playwright-report
+test-results

@@ -1,0 +1,80 @@
+# syntax=docker/dockerfile:1
+
+# Imagen de DESARROLLO (Fase 8.0).
+#
+# No es la imagen de produccion: aca NO se compila la app ni se copia el codigo.
+# La imagen aporta el toolchain (Node 22, npm, Prisma, Chromium/Playwright) y el
+# codigo se monta desde el host en tiempo de ejecucion para conservar el hot
+# reload. Ver docs/desarrollo-en-contenedor.md.
+#
+# Construir y levantar: ./scripts/dev-up.sh (o ./scripts/dev-rebuild.sh)
+
+FROM node:22-bookworm-slim
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    NEXT_TELEMETRY_DISABLED=1 \
+    NPM_CONFIG_UPDATE_NOTIFIER=false \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Herramientas de sistema. Las librerias de Chromium se instalan mas abajo con
+# `playwright install --with-deps`, que necesita apt como root.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      ca-certificates \
+      curl \
+      git \
+      openssh-client \
+      postgresql-client \
+      tini \
+ && rm -rf /var/lib/apt/lists/*
+
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+# Usuario sin privilegios con el mismo UID/GID que el del host. La imagen base
+# ya trae el usuario `node` con 1000:1000, asi que solo se crea `dev` cuando el
+# UID/GID pedido esta libre. Se usa USER numerico para no depender del nombre.
+RUN set -eux; \
+    if ! getent group "${USER_GID}" >/dev/null; then \
+      groupadd --gid "${USER_GID}" dev; \
+    fi; \
+    if ! getent passwd "${USER_UID}" >/dev/null; then \
+      useradd --uid "${USER_UID}" --gid "${USER_GID}" \
+        --create-home --shell /bin/bash dev; \
+    fi; \
+    mkdir -p /app /ms-playwright /home/dev; \
+    chown -R "${USER_UID}:${USER_GID}" /app /ms-playwright /home/dev
+
+# HOME explicito: con USER numerico algunas herramientas (npm, Playwright) no
+# resuelven el home desde /etc/passwd.
+ENV HOME=/home/dev
+
+WORKDIR /app
+
+# Dependencias. La capa solo se invalida si cambian package.json o el lockfile.
+COPY package.json package-lock.json ./
+
+# Todo en una sola capa: npm ci, navegador y chown. Si el chown fuese un RUN
+# aparte, overlayfs copiaria node_modules entero y la imagen creceria al doble.
+RUN npm ci --legacy-peer-deps \
+ && npx playwright install --with-deps chromium \
+ && rm -rf /var/lib/apt/lists/* \
+ && chown -R "${USER_UID}:${USER_GID}" /app /ms-playwright /home/dev
+
+# Directorios que se montan como volumenes nombrados. Se crean en la imagen
+# (vacios y con el dueno correcto) para que el volumen nuevo los herede; si no
+# existieran, el punto de montaje quedaria como root y uid 1000 no podria
+# escribir la cache de Next.
+RUN mkdir -p /app/.next /app/public/media \
+ && chown -R "${USER_UID}:${USER_GID}" /app/.next /app/public/media
+
+# Entrypoint: espera Postgres, aplica migraciones y ejecuta el comando recibido.
+COPY scripts/dev-entrypoint.sh /usr/local/bin/dev-entrypoint.sh
+RUN chmod 0755 /usr/local/bin/dev-entrypoint.sh
+
+USER ${USER_UID}:${USER_GID}
+
+EXPOSE 3000
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/dev-entrypoint.sh"]
+CMD ["npm", "run", "dev"]
