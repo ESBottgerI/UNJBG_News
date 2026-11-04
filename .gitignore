@@ -59,9 +59,8 @@ yarn-error.log*
 /AGENTS.md
 /CLAUDE.md
 
-# logs de fases (docs/plan.md si se trackea)
-/docs/log-fase-*.md
-/docs/arranque-fase-*.md
+# documentacion local (se entrega empaquetada, no se versiona)
+/docs/
 
 # vercel
 .vercel
