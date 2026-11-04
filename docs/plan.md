@@ -2,7 +2,9 @@
 
 Documentacion detallada: [1. Introduccion](01-introduccion.md),
 [4. Arquitectura](04-arquitectura.md), [Fase 6. Sitio publico](fase-6-sitio-publico.md),
-[Fase 7. Robustez](fase-7-robustez.md) y [modelo entidad-relacion](er-model.md).
+[Fase 7. Robustez](fase-7-robustez.md),
+[Desarrollo en contenedor](desarrollo-en-contenedor.md) y
+[modelo entidad-relacion](er-model.md).
 Este archivo es el plan de trabajo y el detalle de las fases.
 
 ## 1. Que es esto?
@@ -77,12 +79,17 @@ publicidad (Google AdSense) a los lados.
 | 5 | Pipeline final: sharp, sanitizacion, categorias por palabras, busqueda en espanol | 3-4 dias | Completada en rama |
 | 6 | Sitio publico estilo 2010: header minimo + secciones, feed central, ads en sidebar, ficha de noticia, sitemap, SEO | 4-6 dias | Completada en rama |
 | 7 | Robustez: limites de peticiones, alertas de error, backup automatico de BD | 2-3 dias | Completada en rama |
+| 8.0 | Entorno de desarrollo en contenedor (Podman) + export/limpieza del host | 0.5-1 dia | Completada en rama |
+| 8.1 | Tests (Vitest + Playwright) y CI en GitHub Actions | ~5 dias | Completada en rama |
 
-Estado al 2026-11-03: fases 0 a 7 implementadas y verificadas en local. La fase
-7 vive en la rama `feat/hardening`, basada en `feat/public-site` (fases 5 y 6).
-Ninguna de esas ramas esta mergeada a `main` todavia. El detalle de la Fase 6
-esta en [fase-6-sitio-publico.md](fase-6-sitio-publico.md) y el de la Fase 7 en
-[fase-7-robustez.md](fase-7-robustez.md).
+Estado al 2026-11-04: fases 0 a 7 y 8.0/8.1 implementadas y verificadas en
+local. La fase 7 y la 8.0/8.1 viven en la rama `feat/hardening`, basada en
+`feat/public-site` (fases 5 y 6). Ninguna de esas ramas esta mergeada a `main`
+todavia. El detalle de la Fase 6 esta en
+[fase-6-sitio-publico.md](fase-6-sitio-publico.md), el de la Fase 7 en
+[fase-7-robustez.md](fase-7-robustez.md), el del entorno de desarrollo en
+[desarrollo-en-contenedor.md](desarrollo-en-contenedor.md) y el de la suite de
+tests/CI en [fase-8-calidad.md](fase-8-calidad.md).
 
 **Total estimado: ~1.5-2 meses** trabajando medio tiempo.
 

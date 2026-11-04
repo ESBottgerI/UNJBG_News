@@ -12,15 +12,31 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "db:seed:e2e": "tsx prisma/seed.e2e.ts",
     "db:studio": "prisma studio",
     "db:setup": "prisma migrate dev && prisma db seed",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "vitest run --config vitest.unit.config.mts",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
+    "test:watch": "vitest --config vitest.unit.config.mts",
+    "test:coverage": "vitest run --config vitest.unit.config.mts --coverage",
+    "test:e2e": "playwright test",
     "adapters:run": "tsx scripts/run-adapter.ts",
     "whatsapp:pair": "tsx scripts/whatsapp-pair.ts",
     "whatsapp:chats": "tsx scripts/whatsapp-chats.ts",
     "whatsapp:start": "tsx scripts/whatsapp-worker.ts",
     "pipeline:process": "tsx scripts/process-queue.ts",
     "db:backup": "bash scripts/backup-db.sh",
-    "db:restore": "bash scripts/restore-db.sh"
+    "db:restore": "bash scripts/restore-db.sh",
+    "dev:up": "bash scripts/dev-up.sh",
+    "dev:down": "bash scripts/dev-down.sh",
+    "dev:shell": "bash scripts/dev-shell.sh",
+    "dev:logs": "bash scripts/dev-logs.sh",
+    "dev:rebuild": "bash scripts/dev-rebuild.sh",
+    "dev:reset": "bash scripts/dev-reset.sh",
+    "dev:test": "bash scripts/dev-test.sh",
+    "dev:whatsapp": "bash scripts/dev-whatsapp-start.sh",
+    "dev:handover": "bash scripts/export-handover.sh"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -40,6 +56,7 @@
     "sharp": "^0.35.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/node-cron": "^3.0.11",
@@ -47,12 +64,16 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/sanitize-html": "^2.16.2",
+    "@vitest/coverage-v8": "^5.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "prisma": "^6.19.3",
     "qrcode-terminal": "^0.12.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^7.3.7",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^5.1.0"
   }
 }

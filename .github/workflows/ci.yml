@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  AUTH_SECRET: "ci-secret-solo-para-tests-no-usar-en-produccion"
+  INGEST_API_KEY: "ci-ingest-key"
+  ENABLE_ADAPTER_SCHEDULER: "false"
+  ENABLE_WHATSAPP_WORKER: "false"
+  SITE_URL: "http://127.0.0.1:3000"
+
+jobs:
+  checks:
+    name: Lint, tipos, unitarios e integracion
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: unjbg
+          POSTGRES_PASSWORD: unjbg_ci_password
+          POSTGRES_DB: unjbg_news_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U unjbg -d unjbg_news_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://unjbg:unjbg_ci_password@127.0.0.1:5432/unjbg_news_test?schema=public
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci --legacy-peer-deps
+
+      - name: Generar cliente de Prisma
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tipos
+        run: npm run typecheck
+
+      - name: Tests unitarios
+        run: npm run test:unit
+
+      - name: Migraciones en la base de test
+        run: npx prisma migrate deploy
+
+      - name: Tests de integracion
+        run: npm run test:integration
+
+  e2e:
+    name: E2E (build + Playwright)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: unjbg
+          POSTGRES_PASSWORD: unjbg_ci_password
+          POSTGRES_DB: unjbg_news_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U unjbg -d unjbg_news_e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://unjbg:unjbg_ci_password@127.0.0.1:5432/unjbg_news_e2e?schema=public
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci --legacy-peer-deps
+
+      - name: Generar cliente de Prisma
+        run: npx prisma generate
+
+      - name: Migraciones en la base e2e
+        run: npx prisma migrate deploy
+
+      - name: Cargar datos de la suite e2e
+        run: npm run db:seed:e2e
+
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build de produccion
+        run: npm run build
+
+      - name: Tests E2E
+        run: npm run test:e2e
+
+      - name: Guardar reporte de Playwright
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
