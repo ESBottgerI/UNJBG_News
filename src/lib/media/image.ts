@@ -40,7 +40,6 @@ export async function downloadAndProcessImage(url: string): Promise<ProcessedIma
     await thumb.toFile(thumbPath);
 
     const stats = await fs.stat(imagePath);
-    const thumbStats = await fs.stat(thumbPath);
 
     return {
       originalUrl: url,

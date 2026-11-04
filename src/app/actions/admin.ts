@@ -7,6 +7,14 @@ import type { PostStatus, SourceStatus, SourceType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireUser } from "@/lib/auth/session";
 
+// El sitio publico se renderiza con force-dynamic, asi que no depende de la
+// cache. Estas revalidaciones limpian la Router Cache del cliente para que al
+// volver al sitio publico se vea el cambio al instante.
+function revalidatePublic() {
+  revalidatePath("/");
+  revalidatePath("/buscar");
+}
+
 // ---------- Cola de moderacion ----------
 
 // Convierte un RawItem en un Post. Si la fuente tiene autopublish la nota sale
@@ -61,6 +69,7 @@ export async function approveRawItem(formData: FormData): Promise<void> {
   revalidatePath("/admin");
   revalidatePath("/admin/queue");
   revalidatePath("/admin/posts");
+  revalidatePublic();
   redirect("/admin/posts");
 }
 
@@ -103,6 +112,7 @@ export async function setPostStatus(formData: FormData): Promise<void> {
   revalidatePath("/admin");
   revalidatePath("/admin/posts");
   revalidatePath("/admin/queue");
+  revalidatePublic();
   redirect("/admin/posts");
 }
 
@@ -126,6 +136,7 @@ export async function createCategory(formData: FormData): Promise<void> {
   await prisma.category.create({ data: { name, slug } });
 
   revalidatePath("/admin/categories");
+  revalidatePublic();
   redirect("/admin/categories");
 }
 
@@ -139,6 +150,7 @@ export async function updateCategory(formData: FormData): Promise<void> {
   await prisma.category.update({ where: { id }, data: { name, slug } });
 
   revalidatePath("/admin/categories");
+  revalidatePublic();
   redirect("/admin/categories");
 }
 
@@ -148,6 +160,7 @@ export async function deleteCategory(formData: FormData): Promise<void> {
   await prisma.category.delete({ where: { id } });
 
   revalidatePath("/admin/categories");
+  revalidatePublic();
   redirect("/admin/categories");
 }
 

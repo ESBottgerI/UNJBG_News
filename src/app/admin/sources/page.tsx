@@ -205,6 +205,19 @@ export default async function AdminSourcesPage() {
                     <span className="block">
                       Ultima corrida:{" "}
                       {new Date(source.lastRunAt).toLocaleString("es-PE")}
+                      {source.lastDurationMs != null &&
+                        ` (${source.lastDurationMs} ms)`}
+                    </span>
+                  )}
+                  {source.lastSuccessAt && (
+                    <span className="block">
+                      Ultimo exito:{" "}
+                      {new Date(source.lastSuccessAt).toLocaleString("es-PE")}
+                    </span>
+                  )}
+                  {source.consecutiveFailures > 0 && (
+                    <span className="mt-1 block rounded bg-amber-50 px-2 py-1 text-amber-700">
+                      {source.consecutiveFailures} fallo(s) seguido(s)
                     </span>
                   )}
                   {source.lastError && (

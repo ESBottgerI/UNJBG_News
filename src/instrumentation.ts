@@ -1,5 +1,10 @@
 import cron from "node-cron";
 import { runDueSources } from "./adapters/runner";
+import { logger } from "./lib/logger";
+import {
+  markSchedulerError,
+  markSchedulerRun,
+} from "./lib/runtime-state";
 
 // Scheduler de adaptadores (Fase 2).
 //
@@ -35,26 +40,30 @@ export function register() {
     async () => {
       try {
         const results = await runDueSources(5);
+
+        // Estado para /api/health, aunque no haya fuentes pendientes.
+        markSchedulerRun({
+          sources: results.length,
+          newItems: results.reduce((sum, r) => sum + r.newItems, 0),
+          duplicates: results.reduce((sum, r) => sum + r.duplicates, 0),
+        });
+
         if (results.length > 0) {
-          const summary = results
-            .map(
-              (r) =>
-                `${r.sourceId}: new=${r.newItems} dup=${r.duplicates}${
-                  r.error ? ` error=${r.error}` : ""
-                }`
-            )
-            .join(" | ");
-          console.log(`[adapters] poll completado -> ${summary}`);
+          logger.info("scheduler.poll", {
+            sources: results.length,
+            newItems: results.reduce((sum, r) => sum + r.newItems, 0),
+            duplicates: results.reduce((sum, r) => sum + r.duplicates, 0),
+            errors: results.filter((r) => r.error).length,
+          });
         }
       } catch (error) {
-        console.error(
-          "[adapters] error en poll:",
-          error instanceof Error ? error.message : error
-        );
+        const message = error instanceof Error ? error.message : String(error);
+        markSchedulerError(message);
+        logger.error("scheduler.poll.failed", { error: message });
       }
     },
     { name: "adapters-poll", noOverlap: true }
   );
 
-  console.log("[adapters] scheduler iniciado (cada 1 min)");
+  logger.info("scheduler.started", { interval: "1m" });
 }

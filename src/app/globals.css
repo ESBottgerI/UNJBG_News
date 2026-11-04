@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111111;
 }
 
 @theme inline {
@@ -12,15 +12,159 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Contenido del articulo (HTML sanitizado del pipeline, Fase 5).
+   Tailwind preflight resetea margenes/listas, asi que se restauran aca. */
+.article-body {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #222;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.article-body p {
+  margin: 0 0 1em;
+}
+
+.article-body h1,
+.article-body h2,
+.article-body h3,
+.article-body h4 {
+  margin: 1.2em 0 0.5em;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.article-body h1 {
+  font-size: 1.6em;
+}
+.article-body h2 {
+  font-size: 1.4em;
+}
+.article-body h3 {
+  font-size: 1.2em;
+}
+
+.article-body a {
+  color: #0b3d91;
+  text-decoration: underline;
+}
+
+.article-body img {
+  max-width: 100%;
+  height: auto;
+  margin: 1em 0;
+  border: 1px solid #e5e5e5;
+}
+
+.article-body ul,
+.article-body ol {
+  margin: 0 0 1em 1.5em;
+}
+.article-body ul {
+  list-style: disc;
+}
+.article-body ol {
+  list-style: decimal;
+}
+.article-body li {
+  margin: 0.25em 0;
+}
+
+.article-body blockquote {
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  border-left: 4px solid #ccc;
+  background: #f7f7f7;
+  color: #555;
+}
+
+.article-body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+.article-body th,
+.article-body td {
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.article-body iframe,
+.article-body video {
+  max-width: 100%;
+}
+
+/* Contenedor del sitio publico: ocupa todo el ancho disponible con un margen
+   proporcional al viewport. El tope de 1800px solo actua en monitores
+   ultrawide; en uno de 1920 el margen real es minimo. Lo usan el encabezado,
+   el pie y el contenido, para que queden siempre alineados entre si. */
+.site-shell {
+  width: 100%;
+  max-width: 1800px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 2vw, 48px);
+}
+
+/* Grilla del contenido publico. Una sola columna en pantallas chicas; a partir
+   de 1024px aparecen los laterales con anchos en clamp() (se adaptan al ancho
+   en vez de quedar fijos) y el centro flexible. Los anuncios conservan su
+   tamano estandar (160x600 y 300x250). */
+.pub-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  padding-block: 1rem;
+}
+
+/* Rejilla del listado de noticias. En pantallas anchas pasa a dos columnas
+   para que el titular no quede en una linea larguisima. */
+.feed-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-content: start;
+}
+
+@media (min-width: 1024px) {
+  .pub-grid {
+    grid-template-columns:
+      clamp(170px, 12vw, 240px)
+      minmax(0, 1fr)
+      clamp(306px, 21vw, 380px);
+    gap: clamp(16px, 1.5vw, 36px);
+  }
+
+  /* Variante sin la columna izquierda (pagina de busqueda). */
+  .pub-grid--no-left {
+    grid-template-columns: minmax(0, 1fr) clamp(306px, 21vw, 380px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .feed-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* La nota principal ocupa las dos columnas de la rejilla. */
+  .feed-grid > .feed-lead {
+    grid-column: 1 / -1;
+  }
+
+  /* Ficha de noticia: el centro se limita a una medida de lectura comoda y el
+     espacio sobrante se reparte entre las columnas, no en los bordes. */
+  .pub-grid--article {
+    grid-template-columns:
+      clamp(170px, 12vw, 240px)
+      minmax(0, 48rem)
+      clamp(306px, 21vw, 380px);
+    justify-content: space-between;
+  }
 }
