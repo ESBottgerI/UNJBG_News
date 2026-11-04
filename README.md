@@ -34,34 +34,70 @@ El plan completo está en [`docs/plan.md`](docs/plan.md).
 - **Robustez (Fase 7)**: limites de peticiones, logs estructurados, historial
   de salud por fuente, alertas por webhook/Telegram, `/api/health` ampliado,
   respaldos de base de datos y despliegue endurecido (worker + nginx).
+- **Entorno de desarrollo (Fase 8.0)**: imagen Podman con el toolchain completo
+  (Node 22, Prisma, Chromium) y scripts `dev-*` para levantar app + base sin
+  instalar nada en el host. Ver
+  [`docs/desarrollo-en-contenedor.md`](docs/desarrollo-en-contenedor.md).
+- **Tests y CI (Fase 8.1)**: 100 tests unitarios, 80 de integración contra
+  Postgres y 17 E2E con Playwright, más GitHub Actions en cada PR. Incluye la
+  corrección del XSS almacenado en la aprobación de la cola. Ver
+  [`docs/fase-8-calidad.md`](docs/fase-8-calidad.md).
 
 ## Requisitos
 
-- Node.js 22+ y npm
-- Docker Engine + Compose (para la base de datos). Si solo tenés Podman,
-  levantar `db` con: `podman compose up -d db`.
+**Con contenedores (recomendado):** solo Podman 4+ (o Docker) y un editor.
+Node, npm, Prisma, Chromium y las dependencias viven dentro de la imagen de
+desarrollo.
 
-## Puesta en marcha (desarrollo local)
+**Sin contenedores:** Node.js 22+, npm y un Postgres 16 accesible.
+
+## Puesta en marcha con contenedores
 
 ```bash
-# 1. Copiar env y ajustar si hace falta
+cp .env.example .env      # completar AUTH_SECRET e INGEST_API_KEY si hace falta
+./scripts/dev-up.sh
+```
+
+La primera vez construye la imagen (`Dockerfile.dev`) y carga los datos de
+ejemplo. Al terminar:
+
+- App: http://localhost:3000
+- Panel admin: http://localhost:3000/admin (credenciales demo en `prisma/seed.ts`)
+- Health-check: http://localhost:3000/api/health
+- Postgres: `127.0.0.1:5433` (base `unjbg_news`)
+
+El codigo se monta desde el host, asi que el hot reload funciona igual que con
+`npm run dev`. Para entrar al contenedor:
+
+```bash
+./scripts/dev-shell.sh                          # bash
+./scripts/dev-shell.sh npm run db:studio        # comando puntual
+./scripts/dev-logs.sh                           # logs de la app
+./scripts/dev-down.sh                           # bajar
+```
+
+Guia completa (SELinux, volumenes, WhatsApp, tests, problemas comunes):
+[`docs/desarrollo-en-contenedor.md`](docs/desarrollo-en-contenedor.md).
+
+## Puesta en marcha sin contenedores
+
+```bash
 cp .env.example .env
 
-# 2. Levantar la base de datos (Postgres 16 en Docker)
-docker compose up -d db
+# Postgres 16 (docker o podman; no hace falta compose)
+docker run -d --name unjbg-db -p 5432:5432 \
+  -e POSTGRES_USER=unjbg -e POSTGRES_PASSWORD=unjbg_dev_password \
+  -e POSTGRES_DB=unjbg_news -v unjbg-pgdata:/var/lib/postgresql/data \
+  postgres:16-alpine
 
-# 3. Instalar dependencias
-npm install
-
-#    bajar el navegador que usa Playwright (necesario para el adaptador de Facebook)
+npm ci --legacy-peer-deps
 npx playwright install chromium
-
-# 4. Crear las tablas + cargar fuentes de ejemplo
 npm run db:setup
-
-# 5. Correr la app
 npm run dev
 ```
+
+> `podman compose` falla si no hay un proveedor instalado. Los scripts
+> `scripts/dev-*.sh` no lo necesitan: usan Podman directamente.
 
 - App: http://localhost:3000
 - Panel admin: http://localhost:3000/admin (credenciales demo en `prisma/seed.ts`)
@@ -80,6 +116,9 @@ npm run dev
 | `npm run build` | Build de produccion |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Verifica tipos de TypeScript |
+| `npm run test:unit` | Tests unitarios (Vitest, sin base) |
+| `npm run test:integration` | Tests de integración (base `*_test`) |
+| `npm run test:e2e` | E2E con Playwright (base `*_e2e`) |
 | `npm run db:migrate` | Crea/lleva al dia las migraciones |
 | `npm run db:seed` | Carga ejemplos (fuentes, admin, categorias, items) |
 | `npm run db:studio` | UI de exploracion de la BD |
@@ -89,6 +128,29 @@ npm run dev
 | `npm run whatsapp:start` | Arranca el worker de WhatsApp (lee grupos/canales) |
 | `npm run db:backup` | Genera un respaldo `.sql.gz` de la base |
 | `FORCE=1 npm run db:restore -- <archivo>` | Restaura un respaldo (sobreescribe la base) |
+| `npm run dev:up` | Levanta app + base en contenedores (Podman) |
+| `npm run dev:down` | Baja el entorno en contenedores |
+| `npm run dev:shell` | Shell dentro del contenedor de la app |
+| `npm run dev:test` | Corre la suite de tests en el contenedor |
+| `npm run dev:handover` | Exporta imagen + dump + docs para la entrega |
+
+## Tests y CI
+
+```bash
+./scripts/dev-test.sh unit          # Vitest, sin base de datos
+./scripts/dev-test.sh integration   # Postgres real (unjbg_news_test)
+./scripts/dev-test.sh e2e           # Playwright (unjbg_news_e2e)
+./scripts/dev-test.sh               # unitarios + integración
+```
+
+Las bases de test son separadas y los tests abortan si `DATABASE_URL` no
+contiene `_test` o `_e2e`. El E2E local levanta un segundo `next dev` en el
+puerto 3100 con `distDir=.next-e2e`, así no interfiere con el servidor de
+desarrollo de 3000.
+
+El CI (`.github/workflows/ci.yml`) corre lint, tipos, unitarios, integración y
+E2E en cada PR usando servicios de Postgres 16. Detalle de la suite, el seed E2E
+y la regresión de XSS: [`docs/fase-8-calidad.md`](docs/fase-8-calidad.md).
 
 ## Adaptadores
 
@@ -209,11 +271,12 @@ src/
   lib/            Utilidades compartidas (prisma, auth, format)
   proxy.ts        Guard de /admin (redirige al login si no hay sesion)
 prisma/           Schema + migraciones + seed
-scripts/          CLI: run-adapter, whatsapp-*, backup-db, restore-db
+scripts/          CLI: run-adapter, whatsapp-*, backup-db, restore-db, dev-*
 src/whatsapp/     Session, normalizacion y worker de Baileys
 src/lib/          Logger, rate-limit, alertas, config y acceso a datos
-deploy/           nginx.conf, certificados
+deploy/           nginx.conf, certificados, postgres-init (bases de test)
 compose.yaml      Servicios Docker (db siempre; app+worker+web perfil "full")
 Dockerfile        Build standalone de la app + target worker (WhatsApp)
+Dockerfile.dev    Imagen de desarrollo (toolchain + Chromium)
 docs/plan.md      Plan de proyecto completo
 ```

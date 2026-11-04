@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import type { PostStatus, SourceStatus, SourceType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireUser } from "@/lib/auth/session";
+import { sanitizeBody } from "@/lib/pipeline/sanitize";
 
 // El sitio publico se renderiza con force-dynamic, asi que no depende de la
 // cache. Estas revalidaciones limpian la Router Cache del cliente para que al
@@ -38,7 +39,10 @@ export async function approveRawItem(formData: FormData): Promise<void> {
   if (!title) {
     throw new Error("El titular es obligatorio");
   }
-  const bodyHtml = String(formData.get("body") ?? "").trim();
+  // El cuerpo llega desde un formulario editable: se sanea igual que en el
+  // pipeline automatico. Sin esto un editor podia guardar <script> y el sitio
+  // publico lo renderizaba con dangerouslySetInnerHTML (XSS almacenado).
+  const bodyHtml = sanitizeBody(String(formData.get("body") ?? "").trim());
   const imageUrl = String(formData.get("imageUrl") ?? "").trim() || null;
   const categoryId = String(formData.get("categoryId") ?? "").trim() || null;
 
