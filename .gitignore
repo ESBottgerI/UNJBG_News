@@ -23,6 +23,9 @@
 # media procesada (volumen docker)
 /public/media
 
+# respaldos de base de datos (locales; en produccion van fuera del repo)
+/backups
+
 # misc
 .DS_Store
 *.pem

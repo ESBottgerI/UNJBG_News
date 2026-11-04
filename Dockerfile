@@ -18,7 +18,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
     SKIP_ENV_VALIDATION=1
 RUN npm run build
 
-# Produccion
+# Produccion (sitio + API + scheduler de adaptadores)
 FROM base AS runner
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
@@ -33,3 +33,22 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]
+
+# Worker de WhatsApp (Fase 7): corre el script con tsx, no el standalone.
+# Va en un target aparte para no cargar el sitio con las dependencias de
+# desarrollo que necesita tsx.
+FROM base AS worker
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json tsconfig.json ./
+COPY prisma ./prisma
+COPY scripts ./scripts
+COPY src ./src
+RUN npx prisma generate \
+    && addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 nextjs \
+    && mkdir -p /app/public/media /app/.wa-auth \
+    && chown -R nextjs:nodejs /app
+USER nextjs
+CMD ["npx", "tsx", "scripts/whatsapp-worker.ts"]

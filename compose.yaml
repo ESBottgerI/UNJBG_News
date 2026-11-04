@@ -3,6 +3,7 @@ services:
   # y la app corre con `npm run dev`. En produccion: `docker compose --profile full up -d`.
   db:
     image: postgres:16-alpine
+    container_name: unjbg-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: unjbg
@@ -17,6 +18,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # App Next.js en contenedor (solo en produccion, perfil "full")
   app:
@@ -26,6 +32,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://unjbg:${POSTGRES_PASSWORD:-unjbg_dev_password}@db:5432/unjbg_news
@@ -33,6 +41,43 @@ services:
       - media:/app/public/media
     expose:
       - "3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging: *logging
+
+  # Worker de WhatsApp (Baileys): proceso aparte con el socket persistente.
+  # Solo tiene sentido si ENABLE_WHATSAPP_WORKER=true y hay fuentes WHATSAPP.
+  worker:
+    build:
+      context: .
+      target: worker
+    restart: unless-stopped
+    profiles: ["full"]
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://unjbg:${POSTGRES_PASSWORD:-unjbg_dev_password}@db:5432/unjbg_news
+      # La sesion y las imagenes se guardan en volumenes persistentes.
+      WA_AUTH_DIR: /app/.wa-auth
+      WA_MEDIA_DIR: /app/public/media/whatsapp
+    volumes:
+      - media:/app/public/media
+      - wauth:/app/.wa-auth
+    logging: *logging
 
   # Nginx: proxy inverso + media estatica (solo en produccion, perfil "full")
   web:
@@ -48,7 +93,9 @@ services:
       - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - media:/usr/share/nginx/html/media:ro
       - ./deploy/certs:/etc/nginx/certs:ro
+    logging: *logging
 
 volumes:
   pgdata:
   media:
+  wauth:

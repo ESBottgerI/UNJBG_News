@@ -8,7 +8,8 @@ El plan completo está en [`docs/plan.md`](docs/plan.md).
 
 ## Estado del proyecto
 
-**Fase 4 (WhatsApp) — implementado y pendiente de prueba con el numero real:**
+**Fases 0 a 7 implementadas y verificadas en local** (la 7 esta en la rama
+`feat/hardening`; ver [`docs/fase-7-robustez.md`](docs/fase-7-robustez.md)):
 
 - App Next.js 16 + TypeScript
 - Docker Compose (Postgres 16 + app + nginx)
@@ -30,6 +31,9 @@ El plan completo está en [`docs/plan.md`](docs/plan.md).
   (`npm run whatsapp:pair`) y descubre los chats (`npm run whatsapp:chats`).
   Solo lee: nunca envia mensajes. Los mensajes caen al mismo pipeline de
   moderacion que los adaptadores web.
+- **Robustez (Fase 7)**: limites de peticiones, logs estructurados, historial
+  de salud por fuente, alertas por webhook/Telegram, `/api/health` ampliado,
+  respaldos de base de datos y despliegue endurecido (worker + nginx).
 
 ## Requisitos
 
@@ -83,6 +87,8 @@ npm run dev
 | `npm run whatsapp:pair` | Empareja el bot con WhatsApp (QR o codigo) |
 | `npm run whatsapp:chats` | Lista chats y resuelve el JID de un canal por link |
 | `npm run whatsapp:start` | Arranca el worker de WhatsApp (lee grupos/canales) |
+| `npm run db:backup` | Genera un respaldo `.sql.gz` de la base |
+| `FORCE=1 npm run db:restore -- <archivo>` | Restaura un respaldo (sobreescribe la base) |
 
 ## Adaptadores
 
@@ -177,15 +183,21 @@ curl -X POST http://localhost:3000/api/ingest \
 # Re-enviar el mismo externalId devuelve duplicate:true (dedup por fuente)
 ```
 
-## Despliegue en VPS (producción, Fase 7+)
+## Despliegue en VPS (producción)
 
 ```bash
 docker compose --profile full up -d --build
 ```
 
-Levanta `db` + `app` (Next standalone) + `web` (nginx, puertos 80/443).
-El certificado HTTPS se coloca en `deploy/certs/`. Las imágenes procesadas
-viven en el volumen `media` (servido por nginx en `/media/`).
+Levanta `db` + `app` (Next standalone + scheduler) + `worker` (WhatsApp, volumen
+`wauth` para la sesion) + `web` (nginx, puertos 80/443). El certificado HTTPS se
+coloca en `deploy/certs/`. Las imágenes procesadas viven en el volumen `media`
+(servido por nginx en `/media/`).
+
+Antes de exponerlo: completar `.env`, usar un numero SIM dedicado para WhatsApp,
+activar HTTPS y programar `npm run db:backup`. El checklist completo y las
+limitaciones conocidas estan en
+[`docs/fase-7-robustez.md`](docs/fase-7-robustez.md).
 
 ## Estructura
 
@@ -197,10 +209,11 @@ src/
   lib/            Utilidades compartidas (prisma, auth, format)
   proxy.ts        Guard de /admin (redirige al login si no hay sesion)
 prisma/           Schema + migraciones + seed
-scripts/          CLI: run-adapter, whatsapp-pair, whatsapp-chats, whatsapp-worker
+scripts/          CLI: run-adapter, whatsapp-*, backup-db, restore-db
 src/whatsapp/     Session, normalizacion y worker de Baileys
+src/lib/          Logger, rate-limit, alertas, config y acceso a datos
 deploy/           nginx.conf, certificados
-compose.yaml      Servicios Docker (db siempre; app+web perfil "full")
-Dockerfile        Build standalone de la app
+compose.yaml      Servicios Docker (db siempre; app+worker+web perfil "full")
+Dockerfile        Build standalone de la app + target worker (WhatsApp)
 docs/plan.md      Plan de proyecto completo
 ```

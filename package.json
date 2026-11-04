@@ -18,7 +18,9 @@
     "whatsapp:pair": "tsx scripts/whatsapp-pair.ts",
     "whatsapp:chats": "tsx scripts/whatsapp-chats.ts",
     "whatsapp:start": "tsx scripts/whatsapp-worker.ts",
-    "pipeline:process": "tsx scripts/process-queue.ts"
+    "pipeline:process": "tsx scripts/process-queue.ts",
+    "db:backup": "bash scripts/backup-db.sh",
+    "db:restore": "bash scripts/restore-db.sh"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

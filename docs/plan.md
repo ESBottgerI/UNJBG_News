@@ -1,9 +1,9 @@
 # UNJBG News — Plan de Proyecto
 
 Documentacion detallada: [1. Introduccion](01-introduccion.md),
-[4. Arquitectura](04-arquitectura.md), [Fase 6. Sitio publico](fase-6-sitio-publico.md)
-y [modelo entidad-relacion](er-model.md). Este archivo es el plan de trabajo y el
-detalle de las fases.
+[4. Arquitectura](04-arquitectura.md), [Fase 6. Sitio publico](fase-6-sitio-publico.md),
+[Fase 7. Robustez](fase-7-robustez.md) y [modelo entidad-relacion](er-model.md).
+Este archivo es el plan de trabajo y el detalle de las fases.
 
 ## 1. Que es esto?
 
@@ -76,12 +76,13 @@ publicidad (Google AdSense) a los lados.
 | 4 | Adaptador WhatsApp: sesion Baileys, listener de canales + grupos, imagenes | 4-6 dias | Completada |
 | 5 | Pipeline final: sharp, sanitizacion, categorias por palabras, busqueda en espanol | 3-4 dias | Completada en rama |
 | 6 | Sitio publico estilo 2010: header minimo + secciones, feed central, ads en sidebar, ficha de noticia, sitemap, SEO | 4-6 dias | Completada en rama |
-| 7 | Robustez: limites de peticiones, alertas de error, backup automatico de BD | 2-3 dias | Pendiente |
+| 7 | Robustez: limites de peticiones, alertas de error, backup automatico de BD | 2-3 dias | Completada en rama |
 
-Estado al 2026-11-03: fases 0 a 6 implementadas y verificadas; las ramas de las
-fases 5 y 6 (`feat/pipeline-search` y `feat/public-site`) todavia no estan
-mergeadas a `main`. El detalle de la Fase 6 esta en
-[fase-6-sitio-publico.md](fase-6-sitio-publico.md).
+Estado al 2026-11-03: fases 0 a 7 implementadas y verificadas en local. La fase
+7 vive en la rama `feat/hardening`, basada en `feat/public-site` (fases 5 y 6).
+Ninguna de esas ramas esta mergeada a `main` todavia. El detalle de la Fase 6
+esta en [fase-6-sitio-publico.md](fase-6-sitio-publico.md) y el de la Fase 7 en
+[fase-7-robustez.md](fase-7-robustez.md).
 
 **Total estimado: ~1.5-2 meses** trabajando medio tiempo.
 
@@ -123,9 +124,10 @@ mergeadas a `main`. El detalle de la Fase 6 esta en
 - **Local:** PostgreSQL 16 en un contenedor podman (`unjbg-db`, puerto 5432) y la
   app con `npm run dev`. En la maquina de desarrollo no hay Docker, asi que
   `compose.yaml` no se usa ahi; el contenedor se levanta con `podman start unjbg-db`.
-- **VPS:** `docker compose --profile full up -d` (app + postgres + nginx), volumen
-  de disco para imagenes, `nginx` para servir media + HTTPS (certbot / caddy),
-  backup diario de Postgres.
+- **VPS:** `docker compose --profile full up -d --build` (postgres + app +
+  worker de WhatsApp + nginx), volumenes para imagenes y para la sesion de
+  WhatsApp, `nginx` para servir media + HTTPS (certbot / caddy) y respaldo
+  diario con `npm run db:backup` programado por cron o systemd.
 - Sin costos de nube por uso: todo en un solo VPS.
 
 ## 10. Supuestos / decisiones
