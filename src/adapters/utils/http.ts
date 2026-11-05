@@ -4,7 +4,7 @@
 
 const USER_AGENT =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-  "Chrome/126.0.0.0 Safari/537.36 UNJBG-News-Bot/0.1";
+  "Chrome/126.0.0.0 Safari/537.36 NCA-UNJBG-Bot/0.1";
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 const DEFAULT_RETRIES = 2;

@@ -8,7 +8,7 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
-    const session = request.cookies.get("unjbg_session")?.value;
+    const session = request.cookies.get("nca_unjbg_session")?.value;
     if (!session) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";

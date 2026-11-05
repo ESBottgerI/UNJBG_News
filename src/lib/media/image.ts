@@ -14,7 +14,7 @@ export type ProcessedImage = {
 
 export async function downloadAndProcessImage(url: string): Promise<ProcessedImage | null> {
   try {
-    const res = await fetch(url, { headers: { "User-Agent": "UNJBG-News/1.0" } });
+    const res = await fetch(url, { headers: { "User-Agent": "NCA-UNJBG/1.0" } });
     if (!res.ok) return null;
     const buffer = Buffer.from(await res.arrayBuffer());
 

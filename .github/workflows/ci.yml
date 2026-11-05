@@ -31,17 +31,17 @@ jobs:
         env:
           POSTGRES_USER: unjbg
           POSTGRES_PASSWORD: unjbg_ci_password
-          POSTGRES_DB: unjbg_news_test
+          POSTGRES_DB: nca_unjbg_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U unjbg -d unjbg_news_test"
+          --health-cmd "pg_isready -U unjbg -d nca_unjbg_test"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
 
     env:
-      DATABASE_URL: postgresql://unjbg:unjbg_ci_password@127.0.0.1:5432/unjbg_news_test?schema=public
+      DATABASE_URL: postgresql://unjbg:unjbg_ci_password@127.0.0.1:5432/nca_unjbg_test?schema=public
 
     steps:
       - uses: actions/checkout@v4
@@ -82,17 +82,17 @@ jobs:
         env:
           POSTGRES_USER: unjbg
           POSTGRES_PASSWORD: unjbg_ci_password
-          POSTGRES_DB: unjbg_news_e2e
+          POSTGRES_DB: nca_unjbg_e2e
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U unjbg -d unjbg_news_e2e"
+          --health-cmd "pg_isready -U unjbg -d nca_unjbg_e2e"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
 
     env:
-      DATABASE_URL: postgresql://unjbg:unjbg_ci_password@127.0.0.1:5432/unjbg_news_e2e?schema=public
+      DATABASE_URL: postgresql://unjbg:unjbg_ci_password@127.0.0.1:5432/nca_unjbg_e2e?schema=public
       PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
 
     steps:

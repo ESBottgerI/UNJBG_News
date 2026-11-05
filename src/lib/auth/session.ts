@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import type { User } from "@prisma/client";
 
-const SESSION_COOKIE = "unjbg_session";
+const SESSION_COOKIE = "nca_unjbg_session";
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 dias
 
 type SessionClaim = { uid: string; iat: number };

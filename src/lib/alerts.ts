@@ -27,7 +27,7 @@ export function alertsConfigured(): boolean {
 export async function sendAlert(alert: Alert): Promise<void> {
   if (!alertsConfigured()) return;
 
-  const text = `[UNJBG News] ${alert.title}\n${alert.message}`;
+  const text = `[NCA UNJBG] ${alert.title}\n${alert.message}`;
   const tasks: Promise<void>[] = [];
 
   if (WEBHOOK_URL) {

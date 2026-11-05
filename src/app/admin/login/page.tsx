@@ -10,7 +10,7 @@ export default async function AdminLoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-100 px-4">
       <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow">
-        <h1 className="mb-1 text-xl font-bold text-zinc-900">UNJBG News</h1>
+        <h1 className="mb-1 text-xl font-bold text-zinc-900">NCA UNJBG</h1>
         <p className="mb-6 text-sm text-zinc-500">Panel de moderacion</p>
 
         <LoginForm />

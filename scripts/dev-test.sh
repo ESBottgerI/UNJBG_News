@@ -8,8 +8,8 @@
 #
 # Usa bases separadas para no tocar la base de desarrollo:
 #   unit         -> no toca la base
-#   integration  -> unjbg_news_test
-#   e2e          -> unjbg_news_e2e
+#   integration  -> nca_unjbg_test
+#   e2e          -> nca_unjbg_e2e
 
 set -euo pipefail
 

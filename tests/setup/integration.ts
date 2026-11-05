@@ -1,7 +1,7 @@
 // Guard de seguridad de la suite de integracion.
 //
 // Los tests hacen TRUNCATE de tablas. Si por error se apunta a la base de
-// desarrollo (unjbg_news) se perderian datos reales. Este guard aborta antes
+// desarrollo (nca_unjbg) se perderian datos reales. Este guard aborta antes
 // de tocar nada salvo que DATABASE_URL apunte a *_test o *_e2e.
 
 const SAFE_DATABASE = /(_test|_e2e)(\?|$)/i;
