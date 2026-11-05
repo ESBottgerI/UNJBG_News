@@ -8,7 +8,7 @@ const cookieState = vi.hoisted(() => ({
 vi.mock("next/headers", () => ({
   cookies: async () => ({
     get: (name: string) =>
-      name === "unjbg_session" && cookieState.token
+      name === "nca_unjbg_session" && cookieState.token
         ? { name, value: cookieState.token }
         : undefined,
     set: vi.fn(),

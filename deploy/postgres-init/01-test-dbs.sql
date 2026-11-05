@@ -8,8 +8,8 @@
 -- puede usar un DO block porque CREATE DATABASE no corre dentro de una
 -- transaccion.
 
-SELECT 'CREATE DATABASE unjbg_news_test OWNER unjbg'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'unjbg_news_test')\gexec
+SELECT 'CREATE DATABASE nca_unjbg_test OWNER unjbg'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'nca_unjbg_test')\gexec
 
-SELECT 'CREATE DATABASE unjbg_news_e2e OWNER unjbg'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'unjbg_news_e2e')\gexec
+SELECT 'CREATE DATABASE nca_unjbg_e2e OWNER unjbg'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'nca_unjbg_e2e')\gexec

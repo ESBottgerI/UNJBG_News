@@ -3,18 +3,18 @@ services:
   # y la app corre con `npm run dev`. En produccion: `docker compose --profile full up -d`.
   db:
     image: postgres:16-alpine
-    container_name: unjbg-db
+    container_name: nca-unjbg-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: unjbg
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-unjbg_dev_password}
-      POSTGRES_DB: unjbg_news
+      POSTGRES_DB: nca_unjbg
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U unjbg -d unjbg_news"]
+      test: ["CMD-SHELL", "pg_isready -U unjbg -d nca_unjbg"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -36,7 +36,7 @@ services:
       - .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://unjbg:${POSTGRES_PASSWORD:-unjbg_dev_password}@db:5432/unjbg_news
+      DATABASE_URL: postgresql://unjbg:${POSTGRES_PASSWORD:-unjbg_dev_password}@db:5432/nca_unjbg
     volumes:
       - media:/app/public/media
     expose:
@@ -70,7 +70,7 @@ services:
       - .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://unjbg:${POSTGRES_PASSWORD:-unjbg_dev_password}@db:5432/unjbg_news
+      DATABASE_URL: postgresql://unjbg:${POSTGRES_PASSWORD:-unjbg_dev_password}@db:5432/nca_unjbg
       # La sesion y las imagenes se guardan en volumenes persistentes.
       WA_AUTH_DIR: /app/.wa-auth
       WA_MEDIA_DIR: /app/public/media/whatsapp

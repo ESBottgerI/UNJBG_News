@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_FULL_NAME, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,22 +19,22 @@ const SITE_DESCRIPTION =
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "UNJBG News",
-    template: "%s | UNJBG News",
+    default: "NCA UNJBG",
+    template: "%s | NCA UNJBG",
   },
   description: SITE_DESCRIPTION,
-  applicationName: SITE_NAME,
+  applicationName: SITE_FULL_NAME,
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
-    title: "UNJBG News",
+    title: "NCA UNJBG",
     description: SITE_DESCRIPTION,
     url: "/",
     locale: "es_PE",
   },
   twitter: {
     card: "summary_large_image",
-    title: "UNJBG News",
+    title: "NCA UNJBG",
     description: SITE_DESCRIPTION,
   },
 };

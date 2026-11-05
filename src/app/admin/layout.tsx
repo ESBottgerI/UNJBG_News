@@ -15,7 +15,7 @@ export default async function AdminLayout({
   return (
     <div className="flex min-h-screen bg-zinc-100">
       <aside className="flex w-56 shrink-0 flex-col bg-zinc-900 p-4 text-white">
-        <div className="text-lg font-bold">UNJBG News</div>
+        <div className="text-lg font-bold">NCA UNJBG</div>
         <div className="mb-4 text-xs text-zinc-400">Panel de moderacion</div>
 
         <nav className="flex flex-col gap-1 text-sm">

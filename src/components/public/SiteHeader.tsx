@@ -20,7 +20,7 @@ export function SiteHeader({ categories }: { categories: CategoryRef[] }) {
       <div className="site-shell flex flex-wrap items-end justify-between gap-2 pt-3">
         <div>
           <Link href="/" className="text-3xl font-bold tracking-tight text-[#0b3d91]">
-            UNJBG News
+            NCA UNJBG
           </Link>
           <p className="text-xs text-[#666]">Noticias de Tacna y la region</p>
         </div>

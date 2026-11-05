@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props) {
   if (!category) return { title: "Seccion no encontrada" };
   return {
     title: category.name,
-    description: `Noticias de ${category.name} compiladas por UNJBG News.`,
+    description: `Noticias de ${category.name} compiladas por NCA UNJBG.`,
     alternates: { canonical: `/seccion/${category.slug}` },
   };
 }

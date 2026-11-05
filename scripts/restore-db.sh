@@ -2,7 +2,7 @@
 # Restauracion de un respaldo .sql.gz (Fase 7).
 #
 # Uso:
-#   FORCE=1 npm run db:restore -- backups/unjbg_20261103_143000.sql.gz
+#   FORCE=1 npm run db:restore -- backups/nca_unjbg_20261103_143000.sql.gz
 #
 # ADVERTENCIA: sobrescribe el contenido actual de la base. El script exige
 # FORCE=1 para que no se dispare por accidente.
@@ -10,8 +10,8 @@
 set -euo pipefail
 
 FILE="${1:-}"
-DB_CONTAINER="${DB_CONTAINER:-unjbg-db}"
-DB_NAME="${POSTGRES_DB:-unjbg_news}"
+DB_CONTAINER="${DB_CONTAINER:-nca-unjbg-db}"
+DB_NAME="${POSTGRES_DB:-nca_unjbg}"
 DB_USER="${POSTGRES_USER:-unjbg}"
 
 if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then

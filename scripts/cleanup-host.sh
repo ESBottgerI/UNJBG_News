@@ -11,7 +11,6 @@
 #   - ~/.cache/ms-playwright (usar --playwright)
 #   - ~/.npm/_cacache (usar --npm-cache)
 #   - paquetes del sistema (nunca; imprime el comando sugerido)
-#   - el contenedor previo unjbg-db (no pertenece a este entorno)
 
 set -euo pipefail
 
@@ -148,6 +147,4 @@ cat <<'EOF'
     sudo apt remove nodejs npm      # Debian/Ubuntu
 
   Podman/Docker no se borran: sin un motor de contenedores la app no corre.
-  El contenedor previo "unjbg-db" tampoco se toca; borrarlo a mano si ya
-  migraste sus datos y no se necesita.
 EOF

@@ -11,7 +11,7 @@ export type SchedulerState = {
   lastSummary: { sources: number; newItems: number; duplicates: number } | null;
 };
 
-const globalKey = "__unjbgSchedulerState";
+const globalKey = "__ncaUnjbgSchedulerState";
 const g = globalThis as typeof globalThis & {
   [globalKey]?: SchedulerState;
 };

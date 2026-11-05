@@ -3,7 +3,7 @@
 #
 # Uso:
 #   npm run db:backup
-#   BACKUP_DIR=/var/backups/unjbg BACKUP_RETENTION_DAYS=30 npm run db:backup
+#   BACKUP_DIR=/var/backups/nca-unjbg BACKUP_RETENTION_DAYS=30 npm run db:backup
 #
 # Busca pg_dump de dos formas:
 #   1. Dentro del contenedor de Postgres (podman o docker), usando DB_CONTAINER.
@@ -16,11 +16,11 @@ set -euo pipefail
 
 BACKUP_DIR="${BACKUP_DIR:-backups}"
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
-DB_CONTAINER="${DB_CONTAINER:-unjbg-db}"
-DB_NAME="${POSTGRES_DB:-unjbg_news}"
+DB_CONTAINER="${DB_CONTAINER:-nca-unjbg-db}"
+DB_NAME="${POSTGRES_DB:-nca_unjbg}"
 DB_USER="${POSTGRES_USER:-unjbg}"
 STAMP="$(date +%Y%m%d_%H%M%S)"
-OUT="$BACKUP_DIR/unjbg_${STAMP}.sql.gz"
+OUT="$BACKUP_DIR/nca_unjbg_${STAMP}.sql.gz"
 
 mkdir -p "$BACKUP_DIR"
 
@@ -66,7 +66,7 @@ fi
 gzip -t "$OUT"
 
 # Retencion: borrar respaldos viejos.
-find "$BACKUP_DIR" -maxdepth 1 -type f -name 'unjbg_*.sql.gz' \
+find "$BACKUP_DIR" -maxdepth 1 -type f -name 'nca_unjbg_*.sql.gz' \
   -mtime +"$RETENTION_DAYS" -delete
 
 echo "respaldo listo: $OUT ($(du -h "$OUT" | cut -f1))"

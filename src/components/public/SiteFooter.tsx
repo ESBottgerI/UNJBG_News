@@ -6,7 +6,7 @@ export function SiteFooter({ categories }: { categories: CategoryRef[] }) {
   return (
     <footer className="mt-6 border-t border-[#ccc] bg-[#f7f7f7]">
       <div className="site-shell flex flex-wrap items-center gap-x-4 gap-y-1 py-4 text-xs text-[#666]">
-        <span className="font-bold text-[#0b3d91]">UNJBG News</span>
+        <span className="font-bold text-[#0b3d91]">NCA UNJBG</span>
         <Link href="/" className="hover:underline">
           Inicio
         </Link>
@@ -19,7 +19,7 @@ export function SiteFooter({ categories }: { categories: CategoryRef[] }) {
           Buscar
         </Link>
         <span className="ml-auto">
-          &copy; {year} UNJBG News. Noticias compiladas de fuentes publicas.
+          &copy; {year} NCA UNJBG. Noticias compiladas de fuentes publicas.
         </span>
       </div>
     </footer>

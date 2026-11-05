@@ -7,29 +7,29 @@
 #   DEV_APP_PORT=3001 ./scripts/dev-up.sh
 #   DEV_SELINUX=disable ./scripts/dev-up.sh
 
-DEV_NETWORK="${DEV_NETWORK:-unjbg-dev-net}"
+DEV_NETWORK="${DEV_NETWORK:-nca-unjbg-dev-net}"
 
-DEV_DB_CONTAINER="${DEV_DB_CONTAINER:-unjbg-dev-db}"
-DEV_APP_CONTAINER="${DEV_APP_CONTAINER:-unjbg-dev-app}"
-DEV_WA_CONTAINER="${DEV_WA_CONTAINER:-unjbg-dev-wa}"
+DEV_DB_CONTAINER="${DEV_DB_CONTAINER:-nca-unjbg-dev-db}"
+DEV_APP_CONTAINER="${DEV_APP_CONTAINER:-nca-unjbg-dev-app}"
+DEV_WA_CONTAINER="${DEV_WA_CONTAINER:-nca-unjbg-dev-wa}"
 
-DEV_IMAGE="${DEV_IMAGE:-unjbg-news-dev:latest}"
+DEV_IMAGE="${DEV_IMAGE:-nca-unjbg-dev:latest}"
 DEV_DB_IMAGE="${DEV_DB_IMAGE:-docker.io/library/postgres:16-alpine}"
 
-DEV_PGDATA_VOLUME="${DEV_PGDATA_VOLUME:-unjbg-dev-pgdata}"
-DEV_NODE_MODULES_VOLUME="${DEV_NODE_MODULES_VOLUME:-unjbg-dev-node-modules}"
-DEV_NEXT_VOLUME="${DEV_NEXT_VOLUME:-unjbg-dev-next}"
+DEV_PGDATA_VOLUME="${DEV_PGDATA_VOLUME:-nca-unjbg-dev-pgdata}"
+DEV_NODE_MODULES_VOLUME="${DEV_NODE_MODULES_VOLUME:-nca-unjbg-dev-node-modules}"
+DEV_NEXT_VOLUME="${DEV_NEXT_VOLUME:-nca-unjbg-dev-next}"
 
 DEV_APP_PORT="${DEV_APP_PORT:-3000}"
 DEV_DB_PORT="${DEV_DB_PORT:-5433}"
 
-DEV_DB_NAME="${DEV_DB_NAME:-unjbg_news}"
+DEV_DB_NAME="${DEV_DB_NAME:-nca_unjbg}"
 DEV_DB_USER="${DEV_DB_USER:-unjbg}"
 DEV_DB_PASSWORD="${DEV_DB_PASSWORD:-unjbg_dev_password}"
 
 # Bases de datos de la Fase 8.1 (tests).
-DEV_TEST_DB="${DEV_TEST_DB:-unjbg_news_test}"
-DEV_E2E_DB="${DEV_E2E_DB:-unjbg_news_e2e}"
+DEV_TEST_DB="${DEV_TEST_DB:-nca_unjbg_test}"
+DEV_E2E_DB="${DEV_E2E_DB:-nca_unjbg_e2e}"
 
 DEV_UID="${DEV_UID:-$(id -u)}"
 DEV_GID="${DEV_GID:-$(id -g)}"

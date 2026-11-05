@@ -1,6 +1,7 @@
-# UNJBG News
+# NCA UNJBG
 
-Compilador automático de noticias de Tacna y la región desde diferentes fuentes
+**News Center Access UNJBG** — compilador automático de noticias de Tacna y la
+región desde diferentes fuentes
 (WhatsApp Channels, grupos de WhatsApp, Facebook y sitios web), con estilo
 clásico ~2010 y panel de moderación.
 
@@ -59,7 +60,7 @@ ejemplo. Al terminar:
 - App: http://localhost:3000
 - Panel admin: http://localhost:3000/admin (credenciales demo en `prisma/seed.ts`)
 - Health-check: http://localhost:3000/api/health
-- Postgres: `127.0.0.1:5433` (base `unjbg_news`)
+- Postgres: `127.0.0.1:5433` (base `nca_unjbg`)
 
 El codigo se monta desde el host, asi que el hot reload funciona igual que con
 `npm run dev`. Para entrar al contenedor:
@@ -80,9 +81,9 @@ incluye en el paquete de entrega (`handover/`).
 cp .env.example .env
 
 # Postgres 16 (docker o podman; no hace falta compose)
-docker run -d --name unjbg-db -p 5432:5432 \
+docker run -d --name nca-unjbg-db -p 5432:5432 \
   -e POSTGRES_USER=unjbg -e POSTGRES_PASSWORD=unjbg_dev_password \
-  -e POSTGRES_DB=unjbg_news -v unjbg-pgdata:/var/lib/postgresql/data \
+  -e POSTGRES_DB=nca_unjbg -v nca-unjbg-pgdata:/var/lib/postgresql/data \
   postgres:16-alpine
 
 npm ci --legacy-peer-deps
@@ -133,8 +134,8 @@ npm run dev
 
 ```bash
 ./scripts/dev-test.sh unit          # Vitest, sin base de datos
-./scripts/dev-test.sh integration   # Postgres real (unjbg_news_test)
-./scripts/dev-test.sh e2e           # Playwright (unjbg_news_e2e)
+./scripts/dev-test.sh integration   # Postgres real (nca_unjbg_test)
+./scripts/dev-test.sh e2e           # Playwright (nca_unjbg_e2e)
 ./scripts/dev-test.sh               # unitarios + integración
 ```
 

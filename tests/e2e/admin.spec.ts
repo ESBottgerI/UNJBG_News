@@ -16,7 +16,7 @@ test.describe("panel de administracion", () => {
     await page.goto("/admin");
 
     await expect(page).toHaveURL(/\/admin\/login(\?.*)?$/);
-    await expect(page.getByRole("heading", { name: "UNJBG News" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "NCA UNJBG" })).toBeVisible();
   });
 
   test("cerrar sesion vuelve al login y protege el panel", async ({ page }) => {
