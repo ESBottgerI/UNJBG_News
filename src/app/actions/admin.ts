@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 import type { PostStatus, SourceStatus, SourceType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireUser } from "@/lib/auth/session";
-import { sanitizeBody } from "@/lib/pipeline/sanitize";
+import * as moderation from "@/lib/moderation/service";
 
 // El sitio publico se renderiza con force-dynamic, asi que no depende de la
 // cache. Estas revalidaciones limpian la Router Cache del cliente para que al
@@ -18,56 +18,19 @@ function revalidatePublic() {
 
 // ---------- Cola de moderacion ----------
 
-// Convierte un RawItem en un Post. Si la fuente tiene autopublish la nota sale
-// directo (PUBLISHED); si no, queda DRAFT a la espera de aprobacion manual.
+// Convierte un RawItem en un Post. La logica de negocio (saneamiento, politica
+// de publicacion y transiciones de estado) vive en el servicio de moderacion;
+// esta action solo autoriza, delega, revalida y redirige.
 export async function approveRawItem(formData: FormData): Promise<void> {
   const user = await requireUser();
-  const rawItemId = String(formData.get("rawItemId") ?? "");
 
-  const rawItem = await prisma.rawItem.findUnique({
-    where: { id: rawItemId },
-    include: { source: true },
-  });
-  if (!rawItem || !rawItem.source) {
-    throw new Error("RawItem no encontrado");
-  }
-  if (rawItem.status === "DISCARDED") {
-    throw new Error("El item ya fue descartado");
-  }
-
-  const title = String(formData.get("title") ?? "").trim();
-  if (!title) {
-    throw new Error("El titular es obligatorio");
-  }
-  // El cuerpo llega desde un formulario editable: se sanea igual que en el
-  // pipeline automatico. Sin esto un editor podia guardar <script> y el sitio
-  // publico lo renderizaba con dangerouslySetInnerHTML (XSS almacenado).
-  const bodyHtml = sanitizeBody(String(formData.get("body") ?? "").trim());
-  const imageUrl = String(formData.get("imageUrl") ?? "").trim() || null;
-  const categoryId = String(formData.get("categoryId") ?? "").trim() || null;
-
-  const status: PostStatus = rawItem.source.autopublish
-    ? "PUBLISHED"
-    : "DRAFT";
-
-  await prisma.post.create({
-    data: {
-      rawItemId: rawItem.id,
-      sourceId: rawItem.sourceId,
-      title,
-      bodyHtml,
-      imageUrl,
-      categoryId,
-      status,
-      authorId: user.id,
-      publishedAt: status === "PUBLISHED" ? new Date() : null,
-      moderatedAt: new Date(),
-    },
-  });
-
-  await prisma.rawItem.update({
-    where: { id: rawItem.id },
-    data: { status: "PROCESSED", processedAt: new Date() },
+  await moderation.approveRawItem({
+    rawItemId: String(formData.get("rawItemId") ?? ""),
+    title: String(formData.get("title") ?? ""),
+    body: String(formData.get("body") ?? ""),
+    imageUrl: String(formData.get("imageUrl") ?? ""),
+    categoryId: String(formData.get("categoryId") ?? ""),
+    authorId: user.id,
   });
 
   revalidatePath("/admin");
@@ -81,10 +44,7 @@ export async function discardRawItem(formData: FormData): Promise<void> {
   await requireUser();
   const rawItemId = String(formData.get("rawItemId") ?? "");
 
-  await prisma.rawItem.update({
-    where: { id: rawItemId },
-    data: { status: "DISCARDED", processedAt: new Date() },
-  });
+  await moderation.discardRawItem(rawItemId);
 
   revalidatePath("/admin");
   revalidatePath("/admin/queue");
@@ -96,21 +56,11 @@ export async function discardRawItem(formData: FormData): Promise<void> {
 // Cambia el estado de un post (publicar / volver a borrador / rechazar).
 export async function setPostStatus(formData: FormData): Promise<void> {
   const user = await requireUser();
-  const postId = String(formData.get("postId") ?? "");
-  const status = String(formData.get("status") ?? "") as PostStatus;
 
-  if (!["DRAFT", "PUBLISHED", "REJECTED"].includes(status)) {
-    throw new Error("Estado invalido");
-  }
-
-  await prisma.post.update({
-    where: { id: postId },
-    data: {
-      status,
-      authorId: user.id,
-      moderatedAt: new Date(),
-      publishedAt: status === "PUBLISHED" ? new Date() : null,
-    },
+  await moderation.setPostStatus({
+    postId: String(formData.get("postId") ?? ""),
+    status: String(formData.get("status") ?? "") as PostStatus,
+    authorId: user.id,
   });
 
   revalidatePath("/admin");

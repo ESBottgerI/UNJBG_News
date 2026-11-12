@@ -1,5 +1,7 @@
 "use server";
 
+// @uwe UC-13 / UC-14 — Login y logout del panel.
+
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";

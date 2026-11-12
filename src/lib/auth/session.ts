@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { assertCanManageSources } from "@/lib/auth/policy";
 import type { User } from "@prisma/client";
 
 const SESSION_COOKIE = "nca_unjbg_session";
@@ -79,12 +80,11 @@ export async function requireUser(): Promise<User> {
   return user;
 }
 
-// Restriccion por rol (solo ADMIN).
+// Restriccion por rol (solo ADMIN). La regla vive en auth/policy.ts para que
+// proxy, paginas y Server Actions compartan la misma definicion.
 export async function requireAdmin(): Promise<User> {
   const user = await requireUser();
-  if (user.role !== "ADMIN") {
-    throw new Error("No autorizado: se requiere rol ADMIN");
-  }
+  assertCanManageSources(user);
   return user;
 }
 

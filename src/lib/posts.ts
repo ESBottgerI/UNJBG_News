@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
+// @uwe UC-15 / UC-16 — Datos del portal publico (solo PUBLISHED).
 // Capa de datos del sitio publico (Fase 6). Todas las consultas filtran
 // status = PUBLISHED para que borradores y rechazados nunca se filtren al
 // sitio publico.

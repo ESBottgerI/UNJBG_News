@@ -63,13 +63,20 @@ export default async function AdminRawItemPage({
         </div>
       ) : null}
 
+      {item.status === "PROCESSED" && !item.post ? (
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
+          Este item ya fue <strong>procesado</strong> y no tiene una noticia
+          asociada. La maquina de estados lo considera un estado final.
+        </div>
+      ) : null}
+
       {item.post ? (
         <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
           Ya convertido en noticia.
         </div>
       ) : null}
 
-      {item.status !== "DISCARDED" && !item.post ? (
+      {item.status === "NEW" && !item.post ? (
         <div className="grid gap-6 lg:grid-cols-2">
           <section className="rounded-xl border border-zinc-200 bg-white p-4">
             <h2 className="mb-3 font-semibold text-zinc-900">

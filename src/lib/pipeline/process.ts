@@ -2,6 +2,14 @@ import { prisma } from "../prisma";
 import { sanitizeBody, cleanText } from "./sanitize";
 import { categorize, getCategoryByName } from "./categorize";
 import { processImages, type ProcessedImage } from "../media/image";
+import {
+  publishedAtFor,
+  resolvePublicationStatus,
+} from "../adaptation/policies";
+
+// @uwe UC-01 / UC-03 / ADP-C1..C2 — Pipeline RawItem -> Post.
+// El estado inicial del Post lo decide la politica de adaptacion
+// (autopublish de la fuente o del runner), no una condicion inline.
 
 export type ProcessOptions = {
   autoPublish?: boolean;
@@ -44,6 +52,10 @@ export async function processRawItem(rawItemId: string, options: ProcessOptions 
   const categoryName = categorize(title + " " + cleanText(bodyHtml));
   const category = categoryName ? await getCategoryByName(categoryName, prisma) : null;
 
+  const autoPublish = Boolean(options.autoPublish) || raw.source.autopublish;
+  const status = resolvePublicationStatus(autoPublish);
+  const now = new Date();
+
   const post = await prisma.post.create({
     data: {
       rawItemId: raw.id,
@@ -54,14 +66,14 @@ export async function processRawItem(rawItemId: string, options: ProcessOptions 
       thumbnailUrl: processedImages[0]?.thumbnailUrl || null,
       imageMeta: processedImages.length > 0 ? processedImages : undefined,
       categoryId: category?.id || null,
-      status: options.autoPublish || raw.source.autopublish ? "PUBLISHED" : "DRAFT",
-      publishedAt: (options.autoPublish || raw.source.autopublish) ? new Date() : null,
+      status,
+      publishedAt: publishedAtFor(status, now),
     },
   });
 
   await prisma.rawItem.update({
     where: { id: raw.id },
-    data: { status: "PROCESSED", processedAt: new Date() },
+    data: { status: "PROCESSED", processedAt: now },
   });
 
   // Actualizar searchVector

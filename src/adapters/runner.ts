@@ -6,12 +6,14 @@ import { sendAlert } from "../lib/alerts";
 import { envInt } from "../lib/config";
 import { logger } from "../lib/logger";
 import { buildAdapter, INGESTIBLE_TYPES, isDue } from "./index";
+import { shouldAlertOnFailure } from "../lib/adaptation/policies";
 import type { AdapterRunResult } from "./types";
 
 const INGESTIBLE = new Set<string>(INGESTIBLE_TYPES);
 const ALERT_AFTER_FAILURES = envInt("ALERT_AFTER_FAILURES", 3);
 const MAX_ERROR_LENGTH = 2000;
 
+// @uwe UC-01 / UC-10 / UC-11 / UC-20 — Runner de adaptadores.
 // Runner de adaptadores: corre el adaptador de una fuente, entrega cada item
 // al pipeline de ingesta (que hace dedup) y registra el resultado en la fuente
 // (lastRunAt / lastError) y en el historial SourceRun (Fase 7).
@@ -232,7 +234,7 @@ async function markSourceError(
   });
 
   // Alerta solo al cruzar el umbral (evita un mensaje por cada fallo seguido).
-  if (updated.consecutiveFailures === ALERT_AFTER_FAILURES) {
+  if (shouldAlertOnFailure(updated.consecutiveFailures, ALERT_AFTER_FAILURES)) {
     void sendAlert({
       title: "Fuente con fallos repetidos",
       message: `${source.name} (${source.type}) fallo ${ALERT_AFTER_FAILURES} veces seguidas. Ultimo error: ${safeMessage}`,

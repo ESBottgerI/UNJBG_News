@@ -1,13 +1,14 @@
-import type { Source, SourceType } from "@prisma/client";
+import type { Source } from "@prisma/client";
 import type { NewsAdapter } from "./types";
 import { UnjbgAdapter } from "./unjbg";
 import { SitemapWebAdapter } from "./web";
 import { RssAdapter } from "./rss";
 import { FacebookAdapter } from "./facebook";
 
-// Fabrica de adaptadores: decide que adaptador usar segun el tipo de fuente
-// y su config. Aqui se agregan adaptadores nuevos en fases futuras
-// (WHATSAPP: Fase 4).
+// @uwe UC-09 / UC-10 / A17 — Fabrica de adaptadores.
+// Decide que adaptador usar segun el tipo de fuente y su config. El registro de
+// tipos ingestibles vive en lib/adapters/registry.ts y se reexporta aqui para
+// conservar el contrato que consumen el runner y los tests.
 
 export function buildAdapter(source: Source): NewsAdapter {
   const config = (source.config ?? {}) as Record<string, unknown>;
@@ -32,8 +33,9 @@ export function buildAdapter(source: Source): NewsAdapter {
 }
 
 // Tipos que el runner puede procesar hoy. WEB/RSS sin navegador (Fase 2);
-// FACEBOOK usa Playwright sobre contenido publico (Fase 3).
-export const INGESTIBLE_TYPES: SourceType[] = ["WEB", "RSS", "FACEBOOK"];
+// FACEBOOK usa Playwright sobre contenido publico (Fase 3). El orden y la
+// definicion viven en el registro para que el runner y el panel coincidan.
+export { INGESTIBLE_TYPES } from "@/lib/adapters/registry";
 
 // Solo fuentes activas y con intervalo de polling configurado.
 export function isDue(

@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 import type { SourceType } from "@prisma/client";
 import { prisma } from "./prisma";
 
+// @uwe UC-01 / UC-02 — Ingesta y deduplicacion.
 // Logica compartida de ingesta. La usa la API (POST /api/ingest) y tambien
 // los adaptadores web (Fase 2) directamente, sin pasar por HTTP.
 //

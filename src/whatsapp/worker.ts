@@ -18,6 +18,7 @@ import {
 } from "./normalize";
 import type { WAMessage } from "@whiskeysockets/baileys";
 
+// @uwe UC-19 — Ingesta push de WhatsApp.
 // Worker de WhatsApp (Fase 4).
 //
 // Se corre como proceso aparte (npm run whatsapp:start), no dentro de Next.js,

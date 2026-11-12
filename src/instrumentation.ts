@@ -6,6 +6,7 @@ import {
   markSchedulerRun,
 } from "./lib/runtime-state";
 
+// @uwe UC-20 — Scheduler de polling.
 // Scheduler de adaptadores (Fase 2).
 //
 // Usa el hook `register` de Next.js (instrumentation.ts): corre una sola vez
