@@ -1,5 +1,8 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // El runner es Debian 12 (OpenSSL 3.0). Se fija explicitamente para no
+  // depender de la deteccion del build.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
