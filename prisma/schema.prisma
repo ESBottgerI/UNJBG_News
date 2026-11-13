@@ -3,8 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Conexion directa (o session pooler) para migraciones y backups.
+  directUrl = env("DIRECT_URL")
 }
 
 enum SourceType {
@@ -126,29 +128,29 @@ model RawItem {
 }
 
 model Post {
-  id          String     @id @default(cuid())
-  rawItem     RawItem?   @relation(fields: [rawItemId], references: [id], onDelete: SetNull)
-  rawItemId   String?    @unique
-  category    Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  categoryId  String?
-  source      Source?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  sourceId    String?
-  title       String
-  bodyHtml    String
-  imageUrl    String?
+  id           String                   @id @default(cuid())
+  rawItem      RawItem?                 @relation(fields: [rawItemId], references: [id], onDelete: SetNull)
+  rawItemId    String?                  @unique
+  category     Category?                @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryId   String?
+  source       Source?                  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  sourceId     String?
+  title        String
+  bodyHtml     String
+  imageUrl     String?
   thumbnailUrl String?
-  imageMeta   Json?
-  status      PostStatus @default(DRAFT)
-  author      User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  authorId    String?
-  publishedAt DateTime?
-  moderatedAt DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  imageMeta    Json?
+  status       PostStatus               @default(DRAFT)
+  author       User?                    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorId     String?
+  publishedAt  DateTime?
+  moderatedAt  DateTime?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
   // Columna tsvector gestionada por trigger (Fase 5/6). Prisma la expone como
   // Unsupported porque no puede mapear tsvector; la busqueda se hace con SQL.
   searchVector Unsupported("tsvector")?
-  views        Int        @default(0)
+  views        Int                      @default(0)
 
   @@index([status, publishedAt])
   @@index([status, views])

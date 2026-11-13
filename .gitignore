@@ -62,6 +62,12 @@ yarn-error.log*
 # documentacion local (se entrega empaquetada, no se versiona)
 /docs/
 
+# credenciales temporales de despliegue (no versionar)
+/borrar/
+
+# certbot / letsencrypt (secretos y certificados)
+/deploy/certbot/
+
 # vercel
 .vercel
 

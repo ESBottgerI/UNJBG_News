@@ -1,0 +1,103 @@
+# Despliegue de produccion (VPS + Supabase).
+#
+# Uso:
+#   docker compose -f compose.prod.yaml build
+#   docker compose -f compose.prod.yaml --profile migrate run --rm migrate
+#   docker compose -f compose.prod.yaml --profile seed run --rm seed
+#   docker compose -f compose.prod.yaml up -d
+#
+# La base de datos es Supabase (ver .env). No se levanta Postgres local.
+
+services:
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      # VPS de 1 GB: limita el heap para dejar lugar a Chromium.
+      NODE_OPTIONS: --max-old-space-size=512
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      TZ: ${TZ:-America/Lima}
+    volumes:
+      - media:/app/public/media
+    expose:
+      - "3000"
+    shm_size: "256mb"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-_}
+    volumes:
+      - ./deploy/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - media:/usr/share/nginx/html/media:ro
+      - ./deploy/certbot/www:/var/www/certbot:ro
+      - ./deploy/certbot/conf:/etc/letsencrypt:ro
+    logging: *logging
+
+  migrate:
+    build:
+      context: .
+      target: migrate
+    restart: "no"
+    profiles: ["migrate"]
+    env_file:
+      - .env
+    logging: *logging
+
+  seed:
+    build:
+      context: .
+      target: worker
+    restart: "no"
+    profiles: ["seed"]
+    env_file:
+      - .env
+    command: ["npx", "tsx", "prisma/seed.prod.ts"]
+    logging: *logging
+
+  # Worker de WhatsApp (Baileys). Solo con --profile whatsapp y tras emparejar.
+  worker:
+    build:
+      context: .
+      target: worker
+    restart: unless-stopped
+    profiles: ["whatsapp"]
+    env_file:
+      - .env
+    environment:
+      TZ: ${TZ:-America/Lima}
+    volumes:
+      - media:/app/public/media
+      - wauth:/app/.wa-auth
+    logging: *logging
+
+volumes:
+  media:
+  wauth:

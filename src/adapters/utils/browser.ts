@@ -22,6 +22,9 @@ export async function getBrowser(): Promise<Browser> {
         "--disable-blink-features=AutomationControlled",
         // Requerido si algun dia se corre dentro de contenedores como root.
         "--no-sandbox",
+        // En contenedores con /dev/shm chico (VPS de 1 GB) evita crashes.
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
       ],
     });
   }
